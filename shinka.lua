@@ -1,5 +1,5 @@
 -- =============================================
--- ShinkaHub- VELOCIDADE + FLY CORRIGIDO + ESP
+-- MEU SCRIPT - VELOCIDADE + FLY + NOCLIP + ESP + AIMBOT + TELEPORTE
 -- =============================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,13 +8,13 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "MeuScript"
+gui.Name = "ShinkaHub"
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Janela principal
+-- Janela principal (altura aumentada para caber tudo)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 360)
-frame.Position = UDim2.new(0.5, -150, 0.5, -180)
+frame.Size = UDim2.new(0, 300, 0, 500)
+frame.Position = UDim2.new(0.5, -150, 0.5, -250)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 frame.Active = true
 frame.Draggable = true
@@ -24,21 +24,23 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
 -- Título
 local titulo = Instance.new("TextLabel")
 titulo.Size = UDim2.new(1, 0, 0, 30)
-titulo.Text = "Meu Script - Completo"
+titulo.Text = "Meu Script - Completo+"
 titulo.TextColor3 = Color3.new(1, 1, 1)
 titulo.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
 titulo.Parent = frame
 Instance.new("UICorner", titulo).CornerRadius = UDim.new(0, 8)
 
--- Área de conteúdo
-local area = Instance.new("Frame")
+-- Área de conteúdo (com rolagem, se necessário)
+local area = Instance.new("ScrollingFrame")
 area.Size = UDim2.new(1, -20, 1, -40)
 area.Position = UDim2.new(0, 10, 0, 35)
 area.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+area.CanvasSize = UDim2.new(0, 0, 0, 700) -- Altura maior que a área para rolagem
+area.ScrollBarThickness = 6
 area.Parent = frame
 Instance.new("UICorner", area).CornerRadius = UDim.new(0, 6)
 
--- ========== VELOCIDADE (COM BOTÃO) ==========
+-- ========== VELOCIDADE ==========
 local speedEnabled = true
 local speedButton = Instance.new("TextButton")
 speedButton.Size = UDim2.new(0.9, 0, 0, 30)
@@ -127,12 +129,12 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ========== FLY (CORRIGIDO) ==========
+-- ========== FLY ==========
 local flyEnabled = false
 local flyConnection = nil
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0.9, 0, 0, 35)
-flyButton.Position = UDim2.new(0.05, 0, 0, 120)
+flyButton.Position = UDim2.new(0.05, 0, 0, 130)
 flyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 flyButton.Text = "Fly: OFF"
 flyButton.TextColor3 = Color3.new(1, 1, 1)
@@ -211,7 +213,7 @@ local noclipEnabled = false
 local noclipConnection = nil
 local noclipButton = Instance.new("TextButton")
 noclipButton.Size = UDim2.new(0.9, 0, 0, 35)
-noclipButton.Position = UDim2.new(0.05, 0, 0, 165)
+noclipButton.Position = UDim2.new(0.05, 0, 0, 175)
 noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 noclipButton.Text = "Noclip: OFF"
 noclipButton.TextColor3 = Color3.new(1, 1, 1)
@@ -243,12 +245,12 @@ noclipButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- ========== BOTÃO DO ESP ==========
+-- ========== ESP ==========
 local espEnabled = true
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(0.9, 0, 0, 35)
-espButton.Position = UDim2.new(0.05, 0, 0, 210)
-espButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50) -- Começa verde (ON)
+espButton.Position = UDim2.new(0.05, 0, 0, 220)
+espButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
 espButton.Text = "ESP: ON"
 espButton.TextColor3 = Color3.new(1, 1, 1)
 espButton.Font = Enum.Font.GothamSemibold
@@ -381,11 +383,150 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Botão do ESP (corrigido: agora alterna cor e texto corretamente)
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     espButton.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
     espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 end)
 
-print("✅ Script corrigido: Fly agora voa e botão ESP funciona!")
+-- ========== AIMBOT ==========
+local aimbotEnabled = false
+local aimbotButton = Instance.new("TextButton")
+aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
+aimbotButton.Position = UDim2.new(0.05, 0, 0, 265)
+aimbotButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+aimbotButton.Text = "Aimbot: OFF"
+aimbotButton.TextColor3 = Color3.new(1, 1, 1)
+aimbotButton.Font = Enum.Font.GothamSemibold
+aimbotButton.TextSize = 16
+aimbotButton.Parent = area
+Instance.new("UICorner", aimbotButton).CornerRadius = UDim.new(0, 6)
+
+-- Slider de FOV
+local fovText = Instance.new("TextLabel")
+fovText.Size = UDim2.new(0.9, 0, 0, 25)
+fovText.Position = UDim2.new(0.05, 0, 0, 310)
+fovText.BackgroundTransparency = 1
+fovText.Text = "FOV: 90"
+fovText.TextColor3 = Color3.fromRGB(200, 200, 200)
+fovText.Font = Enum.Font.Gotham
+fovText.TextSize = 14
+fovText.TextXAlignment = Enum.TextXAlignment.Left
+fovText.Visible = true
+fovText.Parent = area
+
+local fovSlider = Instance.new("Frame")
+fovSlider.Size = UDim2.new(0.9, 0, 0, 5)
+fovSlider.Position = UDim2.new(0.05, 0, 0, 340)
+fovSlider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+fovSlider.Visible = true
+fovSlider.Parent = area
+Instance.new("UICorner", fovSlider).CornerRadius = UDim.new(1, 0)
+
+local fovButton = Instance.new("TextButton")
+fovButton.Size = UDim2.new(0, 20, 0, 20)
+fovButton.Position = UDim2.new(0.5, -10, 0, -7.5)
+fovButton.BackgroundColor3 = Color3.fromRGB(100, 0, 255)
+fovButton.Text = ""
+fovButton.Parent = fovSlider
+Instance.new("UICorner", fovButton).CornerRadius = UDim.new(1, 0)
+
+local fovDragging = false
+local fov = 90
+
+fovButton.MouseButton1Down:Connect(function()
+    fovDragging = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        fovDragging = false
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if fovDragging then
+        local mouseX = UserInputService:GetMouseLocation().X
+        local sliderX = fovSlider.AbsolutePosition.X
+        local sliderW = fovSlider.AbsoluteSize.X
+        local rel = math.clamp(mouseX - sliderX, 0, sliderW)
+        local perc = rel / sliderW
+        fov = 30 + math.floor(perc * 270)
+        fovButton.Position = UDim2.new(perc, -10, 0, -7.5)
+        fovText.Text = "FOV: " .. fov
+    end
+end)
+
+local function IsEnemy(player)
+    if not LocalPlayer.Team or not player.Team then return true end
+    return LocalPlayer.Team ~= player.Team
+end
+
+aimbotButton.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    aimbotButton.Text = "Aimbot: " .. (aimbotEnabled and "ON" or "OFF")
+    aimbotButton.BackgroundColor3 = aimbotEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
+end)
+
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        local closestTarget = nil
+        local closestDist = fov
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 and IsEnemy(player) then
+                local head = player.Character:FindFirstChild("Head")
+                if head then
+                    local screenPoint, onScreen = Camera:WorldToScreenPoint(head.Position)
+                    if onScreen then
+                        local mousePos = UserInputService:GetMouseLocation()
+                        local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            closestTarget = head
+                        end
+                    end
+                end
+            end
+        end
+        if closestTarget then
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.lookAt(Camera.CFrame.Position, closestTarget.Position), 0.3)
+        end
+    end
+end)
+
+-- ========== TELEPORTE ==========
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0.9, 0, 0, 35)
+teleportButton.Position = UDim2.new(0.05, 0, 0, 380)
+teleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+teleportButton.Text = "Teleport: Selecionar"
+teleportButton.TextColor3 = Color3.new(1, 1, 1)
+teleportButton.Font = Enum.Font.GothamSemibold
+teleportButton.TextSize = 16
+teleportButton.Parent = area
+Instance.new("UICorner", teleportButton).CornerRadius = UDim.new(0, 6)
+
+local selectedPlayer = nil
+local playerList = {}
+
+teleportButton.MouseButton1Click:Connect(function()
+    -- Atualiza lista de jogadores
+    playerList = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerList, player.Name)
+        end
+    end
+    if #playerList > 0 then
+        -- Simples: escolhe o primeiro da lista (poderia ser melhorado com um dropdown)
+        selectedPlayer = playerList[1]
+        teleportButton.Text = "Teleport: " .. selectedPlayer
+    else
+        selectedPlayer = nil
+        teleportButton.Text = "Teleport: Nenhum jogador"
+    end
+end)
+
+local teleportAction = Instance.new("TextButton")
+teleportAction.Size = UDim2.new(0.9, 0, 0, 35)
+teleportAction.Position = UDim2.new(0.05,
