@@ -1,4 +1,4 @@
--- Shinka Hub + Passo 3 Corrigido (Visuals e Aimbot funcionais)
+-- Shinka Hub + Passo 3 – Visuals e Aimbot com botões visíveis
 local p=game:GetService"Players"local rs=game:GetService"RunService"local u=game:GetService"UserInputService"local l=game:GetService"Lighting"local lp=p.LocalPlayer local c=workspace.CurrentCamera
 local ts=game:GetService"TweenService"
 local g=Instance.new("ScreenGui",lp.PlayerGui)
@@ -94,22 +94,22 @@ cont.Size=UDim2.new(1,-20,1,-20)
 cont.Position=UDim2.new(0,10,0,10)
 cont.BackgroundTransparency=1
 
--- Função auxiliar para criar botões (com altura ajustada)
-local function novobtn(pai,p,txt,cor,f)
+-- Função auxiliar para criar botões (com posição Y em pixels)
+local function criarBotao(pai, y, texto, cor, funcao)
     local b=Instance.new("TextButton",pai)
     b.Size=UDim2.new(0.9,0,0,35)
-    b.Position=UDim2.new(0.05,0,p,0)
+    b.Position=UDim2.new(0.05,0,0,y)
     b.BackgroundColor3=cor or Color3.fromRGB(60,60,70)
-    b.Text=txt
+    b.Text=texto
     b.TextColor3=Color3.new(1,1,1)
     b.Font=Enum.Font.GothamSemibold
     b.TextSize=14
     Instance.new("UICorner",b).CornerRadius=UDim.new(0,6)
-    if f then b.MouseButton1Click:Connect(f) end
+    if funcao then b.MouseButton1Click:Connect(funcao) end
     return b
 end
 
--- Movement
+-- Movement (já existente)
 local m=Instance.new("Frame",cont)
 m.Size=UDim2.new(1,0,1,0)
 m.BackgroundTransparency=1
@@ -146,59 +146,46 @@ sb.MouseButton1Down:Connect(function()
         if i.UserInputType==Enum.UserInputType.MouseButton1 then d:Disconnect() end
     end)
 end)
-local fly=false
-local flyBtn=novobtn(m,70,"Fly: OFF",nil,function()
-    fly=not fly
-    flyBtn.Text="Fly: "..(fly and"ON"or"OFF")
+criarBotao(m, 70, "Fly: OFF", nil, function() 
+    fly = not fly; flyBtn.Text="Fly: "..(fly and"ON"or"OFF")
     flyBtn.BackgroundColor3=fly and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
-local noclip=false
-local noclipConn
-local noclipBtn=novobtn(m,110,"Noclip: OFF",nil,function()
-    noclip=not noclip
-    noclipBtn.Text="Noclip: "..(noclip and"ON"or"OFF")
+local flyBtn = m:FindFirstChildWhichIsA("TextButton") -- referência
+criarBotao(m, 110, "Noclip: OFF", nil, function()
+    noclip = not noclip; noclipBtn.Text="Noclip: "..(noclip and"ON"or"OFF")
     noclipBtn.BackgroundColor3=noclip and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
     if noclip then
         noclipConn=rs.Stepped:Connect(function()
             if lp.Character then
-                for _,v in pairs(lp.Character:GetChildren()) do
-                    if v:IsA"BasePart" then v.CanCollide=false end
-                end
+                for _,v in pairs(lp.Character:GetChildren()) do if v:IsA"BasePart" then v.CanCollide=false end end
             end
         end)
-    else
-        if noclipConn then noclipConn:Disconnect() noclipConn=nil end
-    end
+    else if noclipConn then noclipConn:Disconnect() noclipConn=nil end end
 end)
+local noclipBtn = m:FindFirstChildWhichIsA("TextButton") -- referência
 
--- Visuals (corrigido: botões em posições adequadas)
+-- Visuals (com botões em posições 10 e 60)
 local v=Instance.new("Frame",cont)
 v.Size=UDim2.new(1,0,1,0)
 v.BackgroundTransparency=1
 v.Visible=false
 local origBright,origFog,origShadow=l.Brightness,l.FogEnd,l.GlobalShadows
 local fb=false
-local fbBtn=novobtn(v,10,"Fullbright: OFF",nil,function()
+criarBotao(v, 10, "Fullbright: OFF", nil, function()
     fb=not fb
-    if fb then
-        l.Brightness=2
-        l.GlobalShadows=false
-        l.Ambient=Color3.new(1,1,1)
-    else
-        l.Brightness=origBright
-        l.GlobalShadows=origShadow
-        l.Ambient=Color3.new(0,0,0)
-    end
+    if fb then l.Brightness=2 l.GlobalShadows=false l.Ambient=Color3.new(1,1,1)
+    else l.Brightness=origBright l.GlobalShadows=origShadow l.Ambient=Color3.new(0,0,0) end
     fbBtn.Text="Fullbright: "..(fb and"ON"or"OFF")
     fbBtn.BackgroundColor3=fb and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
-local nf=false
-local nfBtn=novobtn(v,60,"No Fog: OFF",nil,function()
+local fbBtn = v:FindFirstChildWhichIsA("TextButton")
+criarBotao(v, 60, "No Fog: OFF", nil, function()
     nf=not nf
     if nf then l.FogEnd=1e5 else l.FogEnd=origFog end
     nfBtn.Text="No Fog: "..(nf and"ON"or"OFF")
     nfBtn.BackgroundColor3=nf and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
+local nfBtn = v:FindFirstChildWhichIsA("TextButton") -- segundo botão
 
 -- ESP (informativo)
 local espF=Instance.new("Frame",cont)
@@ -212,7 +199,7 @@ espTxt.Text="ESP ativo automaticamente.\nContorno colorido por vida."
 espTxt.TextColor3=Color3.fromRGB(200,200,200)
 espTxt.TextWrapped=true
 
--- Código ESP (funcional)
+-- ESP funcional (código inalterado)
 local esp={}
 local function criarESP(pl)
     if pl==lp or not pl.Character then return end
@@ -282,21 +269,20 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Aimbot (corrigido)
+-- Aimbot (com botão e slider em posições fixas)
 local aF=Instance.new("Frame",cont)
 aF.Size=UDim2.new(1,0,1,0)
 aF.BackgroundTransparency=1
 aF.Visible=false
 
--- Botão liga/desliga (posição 10)
 local aimOn=false
-local aimBtn=novobtn(aF,10,"Aimbot: OFF",nil,function()
+criarBotao(aF, 10, "Aimbot: OFF", nil, function()
     aimOn=not aimOn
     aimBtn.Text="Aimbot: "..(aimOn and"ON"or"OFF")
     aimBtn.BackgroundColor3=aimOn and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
+local aimBtn = aF:FindFirstChildWhichIsA("TextButton")
 
--- FOV label (posição 60)
 local fovTxt=Instance.new("TextLabel",aF)
 fovTxt.Size=UDim2.new(0.9,0,0,20)
 fovTxt.Position=UDim2.new(0.05,0,0,60)
@@ -304,7 +290,6 @@ fovTxt.Text="FOV: 90"
 fovTxt.TextColor3=Color3.fromRGB(200,200,200)
 fovTxt.TextXAlignment=Enum.TextXAlignment.Left
 
--- FOV slider (posição 85)
 local fovS=Instance.new("Frame",aF)
 fovS.Size=UDim2.new(0.9,0,0,5)
 fovS.Position=UDim2.new(0.05,0,0,85)
@@ -318,12 +303,8 @@ fovB.Text=""
 
 local fovVal=90
 local fovDragging=false
-
 fovB.MouseButton1Down:Connect(function() fovDragging=true end)
-u.InputEnded:Connect(function(i)
-    if i.UserInputType==Enum.UserInputType.MouseButton1 then fovDragging=false end
-end)
-
+u.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then fovDragging=false end end)
 rs.RenderStepped:Connect(function()
     if fovDragging then
         local mx=u:GetMouseLocation().X
@@ -337,17 +318,14 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Função para verificar inimigo
 local function isEnemy(player)
     if not lp.Team or not player.Team then return true end
     return lp.Team ~= player.Team
 end
 
--- Aimbot loop (mira na cabeça)
 rs.RenderStepped:Connect(function()
     if aimOn then
-        local closest=nil
-        local closestDist=fovVal
+        local closest=nil; local closestDist=fovVal
         for _,pl in pairs(p:GetPlayers()) do
             if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 and isEnemy(pl) then
                 local head=pl.Character:FindFirstChild("Head")
@@ -380,4 +358,4 @@ for i=1,4 do
     end)
 end
 
-print("Shinka Hub Passo 3 Corrigido! Visuals e Aimbot funcionando.")
+print("Shinka Hub Passo 3 – Visuals e Aimbot com botões visíveis")
