@@ -1,6 +1,6 @@
 -- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
--- PARTE 1/3 - ESTRUTURA PRINCIPAL, BARRA DE TÍTULO E MINIMIZAR
+-- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 1/4)
+-- ESTRUTURA PRINCIPAL, GUI E SISTEMA DE MINIMIZAR
 -- ===================================================================
 
 -- Serviços
@@ -14,34 +14,26 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 
--- Variáveis Globais (getgenv) - Todas as funções do hub para Volleyball Legends
-getgenv().AutoSpike = false
-getgenv().AutoBlock = false
-getgenv().AutoServe = false
-getgenv().AutoDive = false
-getgenv().AutoJump = false
-getgenv().AutoFarm = false          -- Farm XP / Moedas
-getgenv().AutoWin = false            -- Tentar vencer automático (se houver exploit)
-getgenv().AntiStun = false
-getgenv().InfiniteStamina = false
-getgenv().AutoPowerup = false
-getgenv().TargetEnemy = false        -- Mira no adversário para spike
-getgenv().Walkspeed = 16
-getgenv().Jumppower = 50
-getgenv().SpikePower = 100           -- Força do spike (se controlável)
-getgenv().SelectedTeam = "Auto"       -- Time: Auto, Red, Blue
-getgenv().AutoRespawn = false
-getgenv().NoCooldown = false
+-- Variáveis Globais
+getgenv().BallHitbox = false
+getgenv().BallHitboxSize = 2.0
+getgenv().BallHitboxColor = Color3.fromRGB(255, 0, 0)
+getgenv().AutoStrongServe = false
+getgenv().JumpESP = false
+getgenv().JumpESPColor = Color3.fromRGB(0, 255, 0)
+getgenv().PredictAim = false
+getgenv().PredictionLength = 5
+getgenv().PredictAimColor = Color3.fromRGB(0, 255, 255)
 
 local Player = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ShinkaHub_VL"
+ScreenGui.Name = "ShinkaHub_VL_Specific"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Destroi GUI antiga se existir
+-- Destroi GUI antiga
 for _, v in ipairs(CoreGui:GetChildren()) do
-    if v.Name == "ShinkaHub_VL" then
+    if v.Name == "ShinkaHub_VL_Specific" then
         v:Destroy()
     end
 end
@@ -82,8 +74,8 @@ end
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 700, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
+mainFrame.Size = UDim2.new(0, 700, 0, 550)
+mainFrame.Position = UDim2.new(0.5, -350, 0.5, -275)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
@@ -103,13 +95,12 @@ shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 shadow.Parent = mainFrame
 
--- Gradiente de fundo
 createGradient(mainFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)
 
 -- Barra de Título
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.Size = UDim2.new(1, 0, 0, 45)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleBar.Parent = mainFrame
 createCorner(titleBar, 12)
@@ -119,18 +110,17 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
 titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "ShinkaHub | Volleyball Legends"
+titleLabel.Text = "ShinkaHub | Volleyball Legends (Funcional)"
 titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- Botões de controle
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 32, 0, 32)
-closeButton.Position = UDim2.new(1, -45, 0.5, -16)
+closeButton.Size = UDim2.new(0, 35, 0, 35)
+closeButton.Position = UDim2.new(1, -48, 0.5, -17.5)
 closeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
@@ -142,8 +132,8 @@ createStroke(closeButton, 1, Color3.fromRGB(80, 80, 100))
 
 local minButton = Instance.new("TextButton")
 minButton.Name = "MinButton"
-minButton.Size = UDim2.new(0, 32, 0, 32)
-minButton.Position = UDim2.new(1, -85, 0.5, -16)
+minButton.Size = UDim2.new(0, 35, 0, 35)
+minButton.Position = UDim2.new(1, -92, 0.5, -17.5)
 minButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
 minButton.Text = "−"
 minButton.TextColor3 = Color3.fromRGB(200, 200, 220)
@@ -153,7 +143,6 @@ minButton.Parent = titleBar
 createCorner(minButton, 8)
 createStroke(minButton, 1, Color3.fromRGB(80, 80, 100))
 
--- Hover nos botões
 local function hoverEffect(btn, hoverColor)
     btn.MouseEnter:Connect(function()
         tweenObject(btn, {BackgroundColor3 = hoverColor}, 0.15)
@@ -165,18 +154,18 @@ end
 hoverEffect(closeButton, Color3.fromRGB(70, 70, 90))
 hoverEffect(minButton, Color3.fromRGB(70, 70, 90))
 
--- Container principal (abaixo da barra)
+-- Container principal
 local mainContentContainer = Instance.new("Frame")
 mainContentContainer.Name = "MainContentContainer"
-mainContentContainer.Size = UDim2.new(1, 0, 1, -40)
-mainContentContainer.Position = UDim2.new(0, 0, 0, 40)
+mainContentContainer.Size = UDim2.new(1, 0, 1, -45)
+mainContentContainer.Position = UDim2.new(0, 0, 0, 45)
 mainContentContainer.BackgroundTransparency = 1
 mainContentContainer.Parent = mainFrame
 
--- ========== SISTEMA DE MINIMIZAR ==========
+-- Sistema de minimizar
 local minimizedFrame = Instance.new("Frame")
 minimizedFrame.Name = "MinimizedFrame"
-minimizedFrame.Size = UDim2.new(0, 250, 0, 45)
+minimizedFrame.Size = UDim2.new(0, 280, 0, 50)
 minimizedFrame.Position = mainFrame.Position
 minimizedFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 minimizedFrame.Visible = false
@@ -186,10 +175,10 @@ createStroke(minimizedFrame, 2, Color3.fromRGB(40, 40, 60))
 createGradient(minimizedFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)
 
 local minimizedLabel = Instance.new("TextLabel")
-minimizedLabel.Size = UDim2.new(1, -45, 1, 0)
+minimizedLabel.Size = UDim2.new(1, -50, 1, 0)
 minimizedLabel.Position = UDim2.new(0, 10, 0, 0)
 minimizedLabel.BackgroundTransparency = 1
-minimizedLabel.Text = "ShinkaHub - VL"
+minimizedLabel.Text = "ShinkaHub - VL (Ativo)"
 minimizedLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 minimizedLabel.Font = Enum.Font.GothamBold
 minimizedLabel.TextSize = 16
@@ -198,8 +187,8 @@ minimizedLabel.Parent = minimizedFrame
 
 local restoreButton = Instance.new("TextButton")
 restoreButton.Name = "RestoreButton"
-restoreButton.Size = UDim2.new(0, 32, 0, 32)
-restoreButton.Position = UDim2.new(1, -40, 0.5, -16)
+restoreButton.Size = UDim2.new(0, 35, 0, 35)
+restoreButton.Position = UDim2.new(1, -45, 0.5, -17.5)
 restoreButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
 restoreButton.Text = "⬆"
 restoreButton.TextColor3 = Color3.fromRGB(200, 200, 220)
@@ -210,7 +199,7 @@ createCorner(restoreButton, 8)
 createStroke(restoreButton, 1, Color3.fromRGB(80, 80, 100))
 hoverEffect(restoreButton, Color3.fromRGB(70, 70, 90))
 
--- Arrastar o frame minimizado
+-- Arrastar minimizado
 local minimizedDragging = false
 local minimizedDragStart, minimizedStartPos
 
@@ -235,7 +224,6 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Estado de minimizado
 local isMinimized = false
 
 local function minimize()
@@ -258,7 +246,7 @@ closeButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Arrastar a GUI principal
+-- Arrastar GUI principal
 local dragging = false
 local dragStart, startPos
 
@@ -281,17 +269,15 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
-end)
-
--- ========== FIM DA PARTE 1/3 ==========-- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
--- PARTE 2/3 - ABAS, PAINEL LATERAL, FUNÇÕES DE CRIAÇÃO DE UI
+end)-- ===================================================================
+-- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 2/4)
+-- PAINEL DE ABAS E FUNÇÕES DE CRIAÇÃO DE UI
 -- ===================================================================
 
--- Painel de abas (ScrollingFrame vertical)
+-- Painel de abas
 local tabsPanel = Instance.new("ScrollingFrame")
 tabsPanel.Name = "TabsPanel"
-tabsPanel.Size = UDim2.new(0, 140, 1, -10)
+tabsPanel.Size = UDim2.new(0, 150, 1, -10)
 tabsPanel.Position = UDim2.new(0, 5, 0, 5)
 tabsPanel.BackgroundTransparency = 1
 tabsPanel.ScrollBarThickness = 4
@@ -301,34 +287,31 @@ tabsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
 tabsPanel.Parent = mainContentContainer
 
 local tabsLayout = Instance.new("UIListLayout")
-tabsLayout.Padding = UDim.new(0, 8)
+tabsLayout.Padding = UDim.new(0, 10)
 tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Dados das abas (adaptado para Volleyball Legends)
+-- Abas: Hitbox, Serve, JumpESP, Predict
 local tabsData = {
-    {name = "Home", icon = "🏠", order = 1},
-    {name = "Match", icon = "🏐", order = 2, highlightColor = Color3.fromRGB(255, 140, 0)},
-    {name = "Player", icon = "⚡", order = 3},
-    {name = "Combat", icon = "⚔️", order = 4},
-    {name = "Misc", icon = "🧰", order = 5},
+    {name = "Hitbox", icon = "🎯", order = 1, highlightColor = Color3.fromRGB(255, 100, 100)},
+    {name = "Serve", icon = "💪", order = 2, highlightColor = Color3.fromRGB(100, 255, 100)},
+    {name = "JumpESP", icon = "👆", order = 3, highlightColor = Color3.fromRGB(100, 100, 255)},
+    {name = "Predict", icon = "🔮", order = 4, highlightColor = Color3.fromRGB(255, 255, 0)},
 }
 
 local tabButtons = {}
-local selectedTab = "Match" -- padrão
+local selectedTab = "Hitbox"
 
--- Área de conteúdo
 local contentArea = Instance.new("Frame")
 contentArea.Name = "ContentArea"
-contentArea.Size = UDim2.new(1, -155, 1, -10)
-contentArea.Position = UDim2.new(0, 150, 0, 5)
+contentArea.Size = UDim2.new(1, -165, 1, -10)
+contentArea.Position = UDim2.new(0, 160, 0, 5)
 contentArea.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 contentArea.Parent = mainContentContainer
 createCorner(contentArea, 10)
 createStroke(contentArea, 1, Color3.fromRGB(50, 50, 70))
 
--- Páginas (uma por aba)
 local pages = {}
 for _, tab in ipairs(tabsData) do
     local page = Instance.new("Frame")
@@ -341,16 +324,15 @@ for _, tab in ipairs(tabsData) do
     pages[tab.name] = page
 end
 
--- Função para criar botões de aba
 local function createTabButton(tab)
     local btn = Instance.new("TextButton")
     btn.Name = tab.name .. "Tab"
-    btn.Size = UDim2.new(1, -10, 0, 45)
+    btn.Size = UDim2.new(1, -10, 0, 48)
     btn.BackgroundColor3 = (tab.name == selectedTab) and (tab.highlightColor or Color3.fromRGB(60, 60, 100)) or Color3.fromRGB(35, 35, 50)
     btn.Text = tab.icon .. "   " .. tab.name
     btn.TextColor3 = Color3.fromRGB(240, 240, 255)
     btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 14
+    btn.TextSize = 15
     btn.Parent = tabsPanel
     createCorner(btn, 10)
     createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
@@ -388,13 +370,21 @@ for _, tab in ipairs(tabsData) do
 end
 tabsPanel.CanvasSize = UDim2.new(0, 0, 0, tabsLayout.AbsoluteContentSize.Y + 10)
 
--- ========== FUNÇÕES PARA CRIAR ELEMENTOS NAS PÁGINAS ==========
+-- Layout das páginas
+for name, page in pairs(pages) do
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 20)
+    layout.FillDirection = Enum.FillDirection.Vertical
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = page
+end
 
--- Criar um Toggle (ligar/desligar)
+-- Funções de criação de elementos
 local function createToggle(parent, name, label, default)
     local container = Instance.new("Frame")
     container.Name = name .. "Container"
-    container.Size = UDim2.new(1, -10, 0, 40)
+    container.Size = UDim2.new(1, -10, 0, 45)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -405,35 +395,35 @@ local function createToggle(parent, name, label, default)
     labelObj.Text = label
     labelObj.TextColor3 = Color3.fromRGB(220, 220, 240)
     labelObj.Font = Enum.Font.Gotham
-    labelObj.TextSize = 14
+    labelObj.TextSize = 15
     labelObj.TextXAlignment = Enum.TextXAlignment.Left
     labelObj.Parent = container
 
     local toggleBg = Instance.new("Frame")
     toggleBg.Name = "ToggleBg"
-    toggleBg.Size = UDim2.new(0, 48, 0, 24)
-    toggleBg.Position = UDim2.new(1, -55, 0.5, -12)
+    toggleBg.Size = UDim2.new(0, 50, 0, 26)
+    toggleBg.Position = UDim2.new(1, -60, 0.5, -13)
     toggleBg.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
     toggleBg.Parent = container
     createCorner(toggleBg, 30)
 
     local toggleCircle = Instance.new("Frame")
     toggleCircle.Name = "ToggleCircle"
-    toggleCircle.Size = UDim2.new(0, 20, 0, 20)
-    toggleCircle.Position = UDim2.new(0, 2, 0.5, -10)
+    toggleCircle.Size = UDim2.new(0, 22, 0, 22)
+    toggleCircle.Position = UDim2.new(0, 2, 0.5, -11)
     toggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     toggleCircle.Parent = toggleBg
-    createCorner(toggleCircle, 10)
+    createCorner(toggleCircle, 11)
 
     local state = default or false
     getgenv()[name] = state
 
     local function updateVisual()
         if state then
-            tweenObject(toggleCircle, {Position = UDim2.new(1, -22, 0.5, -10)}, 0.15)
+            tweenObject(toggleCircle, {Position = UDim2.new(1, -24, 0.5, -11)}, 0.15)
             tweenObject(toggleBg, {BackgroundColor3 = Color3.fromRGB(0, 150, 200)}, 0.15)
         else
-            tweenObject(toggleCircle, {Position = UDim2.new(0, 2, 0.5, -10)}, 0.15)
+            tweenObject(toggleCircle, {Position = UDim2.new(0, 2, 0.5, -11)}, 0.15)
             tweenObject(toggleBg, {BackgroundColor3 = Color3.fromRGB(60, 60, 80)}, 0.15)
         end
     end
@@ -450,12 +440,10 @@ local function createToggle(parent, name, label, default)
     return container
 end
 
--- Criar um Slider
-local function createSlider(parent, name, label, min, max, default, color, suffix)
-    suffix = suffix or ""
+local function createSlider(parent, name, label, min, max, default, suffix)
     local container = Instance.new("Frame")
     container.Name = name .. "SliderContainer"
-    container.Size = UDim2.new(1, -10, 0, 50)
+    container.Size = UDim2.new(1, -10, 0, 55)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -466,7 +454,7 @@ local function createSlider(parent, name, label, min, max, default, color, suffi
     labelObj.Text = label
     labelObj.TextColor3 = Color3.fromRGB(200, 200, 220)
     labelObj.Font = Enum.Font.Gotham
-    labelObj.TextSize = 13
+    labelObj.TextSize = 14
     labelObj.TextXAlignment = Enum.TextXAlignment.Left
     labelObj.Parent = container
 
@@ -478,14 +466,14 @@ local function createSlider(parent, name, label, min, max, default, color, suffi
     valueLabel.Text = tostring(default) .. suffix
     valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     valueLabel.Font = Enum.Font.GothamBold
-    valueLabel.TextSize = 13
+    valueLabel.TextSize = 14
     valueLabel.TextXAlignment = Enum.TextXAlignment.Right
     valueLabel.Parent = container
 
     local sliderBg = Instance.new("Frame")
     sliderBg.Name = "SliderBg"
     sliderBg.Size = UDim2.new(1, 0, 0, 8)
-    sliderBg.Position = UDim2.new(0, 0, 0, 25)
+    sliderBg.Position = UDim2.new(0, 0, 0, 28)
     sliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
     sliderBg.Parent = container
     createCorner(sliderBg, 4)
@@ -493,17 +481,17 @@ local function createSlider(parent, name, label, min, max, default, color, suffi
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-    fill.BackgroundColor3 = color or Color3.fromRGB(200, 50, 50)
+    fill.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     fill.Parent = sliderBg
     createCorner(fill, 4)
 
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
-    thumb.Size = UDim2.new(0, 14, 0, 14)
-    thumb.Position = UDim2.new((default - min) / (max - min), -7, 0.5, -7)
+    thumb.Size = UDim2.new(0, 16, 0, 16)
+    thumb.Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8)
     thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     thumb.Parent = sliderBg
-    createCorner(thumb, 7)
+    createCorner(thumb, 8)
     createStroke(thumb, 1, Color3.fromRGB(150, 150, 150))
 
     local dragging = false
@@ -514,9 +502,9 @@ local function createSlider(parent, name, label, min, max, default, color, suffi
         local pos = input.Position.X - sliderBg.AbsolutePosition.X
         local percent = math.clamp(pos / sliderBg.AbsoluteSize.X, 0, 1)
         value = min + (max - min) * percent
-        value = math.floor(value + 0.5)
+        value = math.floor(value * 10 + 0.5) / 10
         fill.Size = UDim2.new(percent, 0, 1, 0)
-        thumb.Position = UDim2.new(percent, -7, 0.5, -7)
+        thumb.Position = UDim2.new(percent, -8, 0.5, -8)
         valueLabel.Text = tostring(value) .. suffix
         getgenv()[name] = value
     end
@@ -542,7 +530,111 @@ local function createSlider(parent, name, label, min, max, default, color, suffi
     return container
 end
 
--- Criar uma seção com título
+local function createColorPicker(parent, name, label, defaultColor)
+    local container = Instance.new("Frame")
+    container.Name = name .. "ColorContainer"
+    container.Size = UDim2.new(1, -10, 0, 45)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+
+    local labelObj = Instance.new("TextLabel")
+    labelObj.Size = UDim2.new(0.6, -5, 1, 0)
+    labelObj.Position = UDim2.new(0, 0, 0, 0)
+    labelObj.BackgroundTransparency = 1
+    labelObj.Text = label
+    labelObj.TextColor3 = Color3.fromRGB(220, 220, 240)
+    labelObj.Font = Enum.Font.Gotham
+    labelObj.TextSize = 15
+    labelObj.TextXAlignment = Enum.TextXAlignment.Left
+    labelObj.Parent = container
+
+    local colorDisplay = Instance.new("Frame")
+    colorDisplay.Name = "ColorDisplay"
+    colorDisplay.Size = UDim2.new(0, 40, 0, 30)
+    colorDisplay.Position = UDim2.new(1, -50, 0.5, -15)
+    colorDisplay.BackgroundColor3 = defaultColor
+    colorDisplay.Parent = container
+    createCorner(colorDisplay, 6)
+    createStroke(colorDisplay, 1, Color3.fromRGB(80, 80, 100))
+
+    local pickerButton = Instance.new("TextButton")
+    pickerButton.Name = "PickerButton"
+    pickerButton.Size = UDim2.new(1, 0, 1, 0)
+    pickerButton.BackgroundTransparency = 1
+    pickerButton.Text = ""
+    pickerButton.Parent = colorDisplay
+
+    pickerButton.MouseButton1Click:Connect(function()
+        local menu = Instance.new("Frame")
+        menu.Size = UDim2.new(0, 200, 0, 200)
+        menu.Position = UDim2.new(0.5, -100, 0.5, -100)
+        menu.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        menu.Parent = ScreenGui
+        createCorner(menu, 8)
+        createStroke(menu, 1, Color3.fromRGB(60, 60, 80))
+
+        local closeBtn = Instance.new("TextButton")
+        closeBtn.Size = UDim2.new(1, -10, 0, 30)
+        closeBtn.Position = UDim2.new(0, 5, 1, -35)
+        closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+        closeBtn.Text = "Fechar"
+        closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        closeBtn.Font = Enum.Font.Gotham
+        closeBtn.TextSize = 14
+        closeBtn.Parent = menu
+        createCorner(closeBtn, 6)
+
+        local colors = {
+            Color3.fromRGB(255, 0, 0),
+            Color3.fromRGB(0, 255, 0),
+            Color3.fromRGB(0, 0, 255),
+            Color3.fromRGB(255, 255, 0),
+            Color3.fromRGB(255, 0, 255),
+            Color3.fromRGB(0, 255, 255),
+            Color3.fromRGB(255, 255, 255),
+            Color3.fromRGB(0, 0, 0),
+        }
+
+        local grid = Instance.new("Frame")
+        grid.Size = UDim2.new(1, -10, 1, -50)
+        grid.Position = UDim2.new(0, 5, 0, 5)
+        grid.BackgroundTransparency = 1
+        grid.Parent = menu
+
+        local function createColorOption(color)
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(0, 40, 0, 40)
+            btn.BackgroundColor3 = color
+            btn.Text = ""
+            btn.Parent = grid
+            createCorner(btn, 6)
+
+            btn.MouseButton1Click:Connect(function()
+                getgenv()[name] = color
+                colorDisplay.BackgroundColor3 = color
+                menu:Destroy()
+            end)
+        end
+
+        for _, color in ipairs(colors) do
+            createColorOption(color)
+        end
+
+        local gridLayout = Instance.new("UIGridLayout")
+        gridLayout.CellSize = UDim2.new(0, 45, 0, 45)
+        gridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+        gridLayout.FillDirection = Enum.FillDirection.Horizontal
+        gridLayout.StartCorner = Enum.StartCorner.TopLeft
+        gridLayout.Parent = grid
+
+        closeBtn.MouseButton1Click:Connect(function()
+            menu:Destroy()
+        end)
+    end)
+
+    return container
+end
+
 local function createSection(parent, title)
     local section = Instance.new("Frame")
     section.Name = title .. "Section"
@@ -551,428 +643,239 @@ local function createSection(parent, title)
     section.Parent = parent
 
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -10, 0, 30)
+    titleLabel.Size = UDim2.new(1, -10, 0, 35)
     titleLabel.Position = UDim2.new(0, 5, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
     titleLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 18
+    titleLabel.TextSize = 20
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = section
 
     local line = Instance.new("Frame")
     line.Size = UDim2.new(1, -10, 0, 2)
-    line.Position = UDim2.new(0, 5, 0, 30)
+    line.Position = UDim2.new(0, 5, 0, 35)
     line.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
     line.Parent = section
     createCorner(line, 1)
 
     local content = Instance.new("Frame")
     content.Name = "Content"
-    content.Size = UDim2.new(1, -10, 1, -40)
-    content.Position = UDim2.new(0, 5, 0, 35)
+    content.Size = UDim2.new(1, -10, 1, -45)
+    content.Position = UDim2.new(0, 5, 0, 40)
     content.BackgroundTransparency = 1
     content.Parent = section
 
     return section, content
-end
-
--- Criar um botão de ação
-local function createButton(parent, text, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 38)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 14
-    btn.Parent = parent
-    createCorner(btn, 8)
-    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
-    
-    btn.MouseButton1Click:Connect(callback)
-    
-    btn.MouseEnter:Connect(function()
-        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
-    end)
-    btn.MouseLeave:Connect(function()
-        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
-    end)
-    
-    return btn
-end
-
--- Criar um dropdown simples
-local function createDropdown(parent, label, options, default, callback)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, -10, 0, 40)
-    container.BackgroundTransparency = 1
-    container.Parent = parent
-
-    local labelObj = Instance.new("TextLabel")
-    labelObj.Size = UDim2.new(0.5, 0, 1, 0)
-    labelObj.BackgroundTransparency = 1
-    labelObj.Text = label
-    labelObj.TextColor3 = Color3.fromRGB(200, 200, 220)
-    labelObj.Font = Enum.Font.Gotham
-    labelObj.TextSize = 13
-    labelObj.TextXAlignment = Enum.TextXAlignment.Left
-    labelObj.Parent = container
-
-    local dropdownBtn = Instance.new("TextButton")
-    dropdownBtn.Size = UDim2.new(0.4, -5, 0, 32)
-    dropdownBtn.Position = UDim2.new(0.6, 0, 0.5, -16)
-    dropdownBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-    dropdownBtn.Text = default .. "  ▼"
-    dropdownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropdownBtn.Font = Enum.Font.GothamSemibold
-    dropdownBtn.TextSize = 13
-    dropdownBtn.Parent = container
-    createCorner(dropdownBtn, 6)
-    createStroke(dropdownBtn, 1, Color3.fromRGB(70, 70, 100))
-
-    local dropdownList = Instance.new("Frame")
-    dropdownList.Name = "DropdownList"
-    dropdownList.Size = UDim2.new(0.4, 0, 0, 0)
-    dropdownList.Position = UDim2.new(0.6, 0, 0, 38)
-    dropdownList.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    dropdownList.Visible = false
-    dropdownList.Parent = container
-    dropdownList.ZIndex = 10
-    createCorner(dropdownList, 6)
-    createStroke(dropdownList, 1, Color3.fromRGB(60, 60, 80))
-
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = dropdownList
-
-    for _, option in ipairs(options) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
-        btn.BackgroundTransparency = 1
-        btn.Text = option
-        btn.TextColor3 = Color3.fromRGB(220, 220, 240)
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 13
-        btn.Parent = dropdownList
-        btn.ZIndex = 10
-
-        btn.MouseButton1Click:Connect(function()
-            dropdownBtn.Text = option .. "  ▼"
-            dropdownList.Visible = false
-            if callback then callback(option) end
-        end)
-    end
-    dropdownList.Size = UDim2.new(0.4, 0, 0, #options * 30 + 4)
-
-    dropdownBtn.MouseButton1Click:Connect(function()
-        dropdownList.Visible = not dropdownList.Visible
-    end)
-
-    return container
-end
-
--- ========== FIM DA PARTE 2/3 ==========-- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
--- PARTE 3/3 - CONTEÚDO DAS ABAS E HEARTBEAT (FUNÇÕES ATIVAS)
+end-- ===================================================================
+-- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 3/4)
+-- CONTEÚDO DAS ABAS HITBOX E SERVE
 -- ===================================================================
 
--- Layout automático para as páginas
-for name, page in pairs(pages) do
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 15)
-    layout.FillDirection = Enum.FillDirection.Vertical
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = page
+-- ========== ABA HITBOX ==========
+local hitboxPage = pages["Hitbox"]
+
+local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
+ballSection.Size = UDim2.new(1, 0, 0, 180)
+
+createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
+createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1.0, 5.0, 2.0, "x")
+createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().BallHitboxColor)
+
+-- ========== ABA SERVE ==========
+local servePage = pages["Serve"]
+
+local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
+serveSection.Size = UDim2.new(1, 0, 0, 60)
+
+createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)-- ===================================================================
+-- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 4/4)
+-- CONTEÚDO DAS ABAS JUMPESP E PREDICT + HEARTBEAT
+-- ===================================================================
+
+-- ========== ABA JUMP ESP ==========
+local jumpPage = pages["JumpESP"]
+
+local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
+jumpSection.Size = UDim2.new(1, 0, 0, 130)
+
+createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
+createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
+
+-- ========== ABA PREDICT ==========
+local predictPage = pages["Predict"]
+
+local predictSection, predictContent = createSection(predictPage, "Predict Aim")
+predictSection.Size = UDim2.new(1, 0, 0, 180)
+
+createToggle(predictContent, "PredictAim", "Enable Predict Aim", false)
+createSlider(predictContent, "PredictionLength", "Prediction Length", 1, 20, 5, " studs")
+createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)
+
+-- ========== HEARTBEAT LOOP ==========
+
+local hitboxOverlay = nil
+local jumpESPLines = {}
+local predictLines = {}
+
+local function findBall()
+    return Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
 end
 
--- ========== ABA HOME ==========
-local homePage = pages["Home"]
+local function findServeRemote()
+    local remote = ReplicatedStorage:FindFirstChild("Serve") or 
+                   (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Serve"))
+    return remote
+end
 
--- Seção Auto
-local autoSection, autoContent = createSection(homePage, "Auto")
-autoSection.Size = UDim2.new(1, 0, 0, 130)
-createToggle(autoContent, "AutoFarm", "Auto Farm XP", false)
-createToggle(autoContent, "AutoWin", "Auto Win (Experimental)", false)
-createToggle(autoContent, "AutoRespawn", "Auto Respawn", false)
-
--- Seção Info
-local infoSection, infoContent = createSection(homePage, "Info")
-infoSection.Size = UDim2.new(1, 0, 0, 80)
-createButton(infoContent, "Rejoin Server", function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
-end)
-createButton(infoContent, "Server Hop", function()
-    -- Tenta encontrar um novo servidor (simplificado)
-    local HttpService = game:GetService("HttpService")
-    local servers = {}
-    -- ... lógica de server hop (pode ser complexa, deixamos simples)
-    print("Server Hop não implementado, use Rejoin.")
-end)
-
--- ========== ABA MATCH (Principal do jogo) ==========
-local matchPage = pages["Match"]
-
--- Seção Ações de Jogo
-local actionsSection, actionsContent = createSection(matchPage, "Match Actions")
-actionsSection.Size = UDim2.new(1, 0, 0, 220)
-
-createToggle(actionsContent, "AutoSpike", "Auto Spike", false)
-createToggle(actionsContent, "AutoBlock", "Auto Block", false)
-createToggle(actionsContent, "AutoServe", "Auto Serve", false)
-createToggle(actionsContent, "AutoDive", "Auto Dive", false)
-createToggle(actionsContent, "AutoJump", "Auto Jump", false)
-createToggle(actionsContent, "TargetEnemy", "Target Enemy (Aim)", false)
-
--- Seção Configurações de Jogo
-local gameConfigSection, gameConfigContent = createSection(matchPage, "Game Config")
-gameConfigSection.Size = UDim2.new(1, 0, 0, 130)
-
-createDropdown(gameConfigContent, "Team", {"Auto", "Red", "Blue"}, "Auto", function(team)
-    getgenv().SelectedTeam = team
-end)
-
-createSlider(gameConfigContent, "SpikePower", "Spike Power", 50, 200, 100, Color3.fromRGB(255, 100, 0), "%")
-createToggle(gameConfigContent, "NoCooldown", "No Cooldown", false)
-
--- ========== ABA PLAYER ==========
-local playerPage = pages["Player"]
-
--- Seção Atributos
-local attrSection, attrContent = createSection(playerPage, "Attributes")
-attrSection.Size = UDim2.new(1, 0, 0, 150)
-
-createSlider(attrContent, "Walkspeed", "Walkspeed", 16, 120, 16, Color3.fromRGB(0, 150, 200))
-createSlider(attrContent, "Jumppower", "Jump Power", 50, 200, 50, Color3.fromRGB(0, 150, 200))
-createToggle(attrContent, "InfiniteStamina", "Infinite Stamina", false)
-createToggle(attrContent, "AntiStun", "Anti Stun", false)
-
--- Seção Visual
-local visualSection, visualContent = createSection(playerPage, "Visual")
-visualSection.Size = UDim2.new(1, 0, 0, 80)
-createToggle(visualContent, "ESP", "ESP Players", false)
-createToggle(visualContent, "Fullbright", "Fullbright", false)
-
--- ========== ABA COMBAT ==========
-local combatPage = pages["Combat"]
-
-local combatSection, combatContent = createSection(combatPage, "Combat Options")
-combatSection.Size = UDim2.new(1, 0, 0, 150)
-
-createToggle(combatContent, "AutoPowerup", "Auto Power-up", false)
-createToggle(combatContent, "AutoSpike", "Auto Spike (Combat)", false) -- pode duplicar, mas é separado
-createToggle(combatContent, "AutoBlock", "Auto Block (Combat)", false)
-createButton(combatContent, "Reset Character", function()
-    if Player.Character then
-        Player.Character:BreakJoints()
-    end
-end)
-
--- ========== ABA MISC ==========
-local miscPage = pages["Misc"]
-
-local miscSection, miscContent = createSection(miscPage, "Extras")
-miscSection.Size = UDim2.new(1, 0, 0, 120)
-createToggle(miscContent, "AntiAfk", "Anti-AFK", false)
-createToggle(miscContent, "NoClip", "NoClip (Experimental)", false)
-createToggle(miscContent, "InfiniteJump", "Infinite Jump", false)
-
--- ========== HEARTBEAT LOOP - LÓGICA ATIVA PARA VOLLEYBALL LEGENDS ==========
 RunService.Heartbeat:Connect(function()
-    -- Garantir que o personagem existe
     local character = Player.Character
-    local humanoid = character and character:FindFirstChild("Humanoid")
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    if not character or not humanoid or not rootPart then return end
+    local ball = findBall()
 
-    -- ===== FUNÇÕES DE MOVIMENTAÇÃO E ATRIBUTOS =====
-    if getgenv().Walkspeed then
-        humanoid.WalkSpeed = getgenv().Walkspeed
-    end
-    if getgenv().Jumppower then
-        humanoid.JumpPower = getgenv().Jumppower
-    end
-
-    -- ===== INFINITE STAMINA =====
-    if getgenv().InfiniteStamina then
-        -- Exemplo: Stamina pode ser um NumberValue no personagem ou um atributo
-        local stamina = character:FindFirstChild("Stamina") or character:FindFirstChild("Energy")
-        if stamina and stamina:IsA("NumberValue") then
-            stamina.Value = stamina.MaxValue or 100
+    -- BALL HITBOX
+    if getgenv().BallHitbox and ball then
+        if not hitboxOverlay or not hitboxOverlay.Parent then
+            hitboxOverlay = Instance.new("Part")
+            hitboxOverlay.Name = "HitboxOverlay"
+            hitboxOverlay.Anchored = true
+            hitboxOverlay.CanCollide = false
+            hitboxOverlay.Transparency = 0.5
+            hitboxOverlay.Shape = Enum.PartType.Ball
+            hitboxOverlay.Material = Enum.Material.ForceField
+            hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
+            hitboxOverlay.BrickColor = BrickColor.new(getgenv().BallHitboxColor)
+            hitboxOverlay.Color = getgenv().BallHitboxColor
+            hitboxOverlay.Parent = Workspace
+        else
+            hitboxOverlay.CFrame = ball:GetPivot()
+            hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
+            hitboxOverlay.Color = getgenv().BallHitboxColor
         end
-    end
-
-    -- ===== AUTO SERVE =====
-    if getgenv().AutoServe then
-        -- Verificar se está no momento de sacar (por exemplo, se há uma bola na mão)
-        -- Isso varia de jogo para jogo. Exemplo genérico:
-        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
-        if ball and ball:FindFirstChild("Handle") then
-            -- Se a bola está perto e o jogador pode sacar
-            local serveremote = ReplicatedStorage:FindFirstChild("Serve") or ReplicatedStorage:FindFirstChild("RemoteEvent")
-            if serveremote then
-                serveremote:FireServer()
-            end
-        end
-    end
-
-    -- ===== AUTO SPIKE =====
-    if getgenv().AutoSpike then
-        -- Verifica se a bola está no ar e próximo para atacar
-        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
-        if ball and ball:FindFirstChild("Handle") then
-            local ballPos = ball.Handle.Position
-            local charPos = rootPart.Position
-            local distance = (ballPos - charPos).Magnitude
-            if distance < 15 and ballPos.Y > charPos.Y + 5 then -- Bola acima
-                local spikeremote = ReplicatedStorage:FindFirstChild("Spike") or ReplicatedStorage:FindFirstChild("Attack")
-                if spikeremote then
-                    spikeremote:FireServer()
-                end
-            end
-        end
-    end
-
-    -- ===== AUTO BLOCK =====
-    if getgenv().AutoBlock then
-        -- Se a bola está vindo em direção ao jogador, bloquear
-        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
-        if ball and ball:FindFirstChild("Handle") then
-            -- Lógica simples: se a bola está se movendo na direção do jogador
-            -- (requer análise de velocidade, deixamos simplificado)
-            local blockemote = ReplicatedStorage:FindFirstChild("Block") or ReplicatedStorage:FindFirstChild("Defense")
-            if blockemote then
-                blockemote:FireServer()
-            end
-        end
-    end
-
-    -- ===== AUTO DIVE =====
-    if getgenv().AutoDive then
-        -- Mergulhar para pegar bola longe
-        local ball = Workspace:FindFirstChild("Ball")
-        if ball and ball:FindFirstChild("Handle") then
-            local ballPos = ball.Handle.Position
-            local charPos = rootPart.Position
-            if (ballPos - charPos).Magnitude > 20 then
-                local diveemote = ReplicatedStorage:FindFirstChild("Dive") or ReplicatedStorage:FindFirstChild("Slide")
-                if diveemote then
-                    diveemote:FireServer()
-                end
-            end
-        end
-    end
-
-    -- ===== AUTO JUMP =====
-    if getgenv().AutoJump then
-        -- Pular quando a bola estiver próxima (para spike/block)
-        local ball = Workspace:FindFirstChild("Ball")
-        if ball and ball:FindFirstChild("Handle") then
-            local ballPos = ball.Handle.Position
-            local charPos = rootPart.Position
-            if (ballPos - charPos).Magnitude < 10 and ballPos.Y > charPos.Y then
-                humanoid.Jump = true
-            end
-        end
-    end
-
-    -- ===== TARGET ENEMY =====
-    if getgenv().TargetEnemy then
-        -- Virar o personagem para o adversário (pode ser útil para mirar)
-        local enemy = nil
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                enemy = player
-                break
-            end
-        end
-        if enemy and enemy.Character and enemy.Character:FindFirstChild("HumanoidRootPart") then
-            local enemyPos = enemy.Character.HumanoidRootPart.Position
-            local lookAt = CFrame.lookAt(rootPart.Position, enemyPos)
-            rootPart.CFrame = CFrame.new(rootPart.Position, Vector3.new(enemyPos.X, rootPart.Position.Y, enemyPos.Z))
-        end
-    end
-
-    -- ===== ANTI STUN =====
-    if getgenv().AntiStun then
-        -- Se o jogador está atordoado, tentar resetar
-        if humanoid:GetState() == Enum.HumanoidStateType.Stunned then
-            humanoid:ChangeState(Enum.HumanoidStateType.Running)
-        end
-    end
-
-    -- ===== AUTO POWER-UP =====
-    if getgenv().AutoPowerup then
-        -- Procurar power-ups no mapa e pegar
-        for _, obj in ipairs(Workspace:GetChildren()) do
-            if obj.Name:lower():find("power") or obj.Name:lower():find("boost") then
-                if obj:IsA("Part") or obj:IsA("Model") then
-                    local pos = obj:IsA("Model") and obj.PrimaryPart and obj.PrimaryPart.Position or obj.Position
-                    rootPart.CFrame = CFrame.new(pos)
-                end
-            end
-        end
-    end
-
-    -- ===== AUTO FARM (ganhar XP) =====
-    if getgenv().AutoFarm then
-        -- Pode ser farmar power-ups, ou simplesmente ficar em uma posição que rende XP
-        -- Exemplo: mover-se para um local específico
-        local farmPos = Vector3.new(0, 20, 0) -- local fictício
-        rootPart.CFrame = CFrame.new(farmPos)
-    end
-
-    -- ===== ANTI-AFK =====
-    if getgenv().AntiAfk then
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end
-
-    -- ===== NO COOLDOWN =====
-    if getgenv().NoCooldown then
-        -- Tentar zerar cooldowns (pode ser via remotes)
-        -- Exemplo genérico: procurar valores de cooldown e setar para 0
-    end
-
-    -- ===== ESP =====
-    if getgenv().ESP then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                -- Desenhar ESP simples (aqui apenas um highlight, mas pode ser mais elaborado)
-                -- Para simplificar, não implementaremos desenho 2D agora.
-            end
-        end
-    end
-
-    -- ===== FULLBRIGHT =====
-    if getgenv().Fullbright then
-        Lighting.Brightness = 2
-        Lighting.Ambient = Color3.new(1, 1, 1)
     else
-        Lighting.Brightness = 1
-        Lighting.Ambient = Color3.new(0, 0, 0)
-    end
-
-    -- ===== NOCLIP =====
-    if getgenv().NoClip then
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
+        if hitboxOverlay then
+            hitboxOverlay:Destroy()
+            hitboxOverlay = nil
         end
     end
 
-    -- ===== INFINITE JUMP =====
-    -- (Já tratado pelo evento abaixo)
-end)
+    -- AUTO STRONG SERVE
+    if getgenv().AutoStrongServe then
+        local remote = findServeRemote()
+        if remote then
+            remote:FireServer(100) -- força máxima
+        end
+    end
 
--- Infinite Jump (detecção de tecla)
-UserInputService.JumpRequest:Connect(function()
-    if getgenv().InfiniteJump and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        Player.Character.Humanoid:ChangeState("Jumping")
+    -- JUMP ESP
+    if getgenv().JumpESP then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
+                local hum = player.Character.Humanoid
+                local root = player.Character.HumanoidRootPart
+                if hum.FloorMaterial == Enum.Material.Air then
+                    if not jumpESPLines[player] then
+                        local attach1 = Instance.new("Attachment")
+                        attach1.Name = "JumpESP_Attach1"
+                        attach1.Parent = root
+                        
+                        local attach2 = Instance.new("Attachment")
+                        attach2.Name = "JumpESP_Attach2"
+                        attach2.Parent = root
+                        
+                        local beam = Instance.new("Beam")
+                        beam.Name = "JumpESP_Beam"
+                        beam.Attachment0 = attach1
+                        beam.Attachment1 = attach2
+                        beam.Width0 = 0.2
+                        beam.Width1 = 0.2
+                        beam.Transparency = NumberSequence.new(0)
+                        beam.Color = ColorSequence.new(getgenv().JumpESPColor)
+                        beam.Parent = Workspace
+                        
+                        jumpESPLines[player] = {attach1, attach2, beam}
+                    end
+                    
+                    local attach1, attach2, beam = unpack(jumpESPLines[player])
+                    local rootPos = root.Position
+                    attach1.Position = Vector3.new(rootPos.X, 0, rootPos.Z)
+                    attach2.Position = Vector3.new(rootPos.X, rootPos.Y, rootPos.Z)
+                    beam.Color = ColorSequence.new(getgenv().JumpESPColor)
+                else
+                    if jumpESPLines[player] then
+                        for _, obj in ipairs(jumpESPLines[player]) do
+                            obj:Destroy()
+                        end
+                        jumpESPLines[player] = nil
+                    end
+                end
+            end
+        end
+    else
+        for player, objs in pairs(jumpESPLines) do
+            for _, obj in ipairs(objs) do
+                obj:Destroy()
+            end
+        end
+        jumpESPLines = {}
+    end
+
+    -- PREDICT AIM
+    if getgenv().PredictAim and ball and rootPart then
+        local ballPart = ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart")
+        if ballPart then
+            local velocity = ballPart.Velocity
+            local magnitude = velocity.Magnitude
+            if magnitude > 0.1 then
+                local direction = velocity.Unit
+                local startPos = ballPart.Position
+                local endPos = startPos + direction * getgenv().PredictionLength
+                
+                if not predictLines["main"] then
+                    local attach1 = Instance.new("Attachment")
+                    attach1.Name = "Predict_Attach1"
+                    attach1.Parent = ballPart
+                    
+                    local attach2 = Instance.new("Attachment")
+                    attach2.Name = "Predict_Attach2"
+                    attach2.Parent = ballPart
+                    
+                    local beam = Instance.new("Beam")
+                    beam.Name = "Predict_Beam"
+                    beam.Attachment0 = attach1
+                    beam.Attachment1 = attach2
+                    beam.Width0 = 0.3
+                    beam.Width1 = 0.3
+                    beam.Transparency = NumberSequence.new(0)
+                    beam.Color = ColorSequence.new(getgenv().PredictAimColor)
+                    beam.Parent = Workspace
+                    
+                    predictLines["main"] = {attach1, attach2, beam}
+                end
+                
+                local attach1, attach2, beam = unpack(predictLines["main"])
+                attach1.Position = Vector3.new(0,0,0)
+                attach2.Position = ballPart.CFrame:PointToObjectSpace(endPos)
+                beam.Color = ColorSequence.new(getgenv().PredictAimColor)
+            else
+                if predictLines["main"] then
+                    for _, obj in ipairs(predictLines["main"]) do
+                        obj:Destroy()
+                    end
+                    predictLines["main"] = nil
+                end
+            end
+        end
+    else
+        if predictLines["main"] then
+            for _, obj in ipairs(predictLines["main"]) do
+                obj:Destroy()
+            end
+            predictLines["main"] = nil
+        end
     end
 end)
 
-print("ShinkaHub - Volleyball Legends carregado! Divirta-se.")
--- ========== FIM DA PARTE 3/3 ==========
+print("ShinkaHub - Volleyball Legends (Funcionalidades Específicas) carregado!")
+print("Ajuste os nomes dos remotes conforme necessário.")
