@@ -1,17 +1,20 @@
 -- =============================================
--- MEU SCRIPT - VELOCIDADE + FLY + NOCLIP
+-- MEU SCRIPT - VELOCIDADE + FLY + NOCLIP + ESP
 -- =============================================
-local player = game:GetService("Players").LocalPlayer
-local runService = game:GetService("RunService")
-local userInput = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "MeuScript"
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Janela principal (um pouco maior para caber os botões)
+-- Janela principal
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 280)
-frame.Position = UDim2.new(0.5, -150, 0.5, -140)
+frame.Size = UDim2.new(0, 300, 0, 320) -- Aumentei para caber o ESP
+frame.Position = UDim2.new(0.5, -150, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 frame.Active = true
 frame.Draggable = true
@@ -21,7 +24,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
 -- Título
 local titulo = Instance.new("TextLabel")
 titulo.Size = UDim2.new(1, 0, 0, 30)
-titulo.Text = "Meu Script - Speed + Fly + Noclip"
+titulo.Text = "Meu Script - Completo"
 titulo.TextColor3 = Color3.new(1, 1, 1)
 titulo.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
 titulo.Parent = frame
@@ -69,15 +72,15 @@ sliderButton.MouseButton1Down:Connect(function()
     dragging = true
 end)
 
-userInput.InputEnded:Connect(function(input)
+UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
 end)
 
-runService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function()
     if dragging then
-        local mouseX = userInput:GetMouseLocation().X
+        local mouseX = UserInputService:GetMouseLocation().X
         local sliderX = slider.AbsolutePosition.X
         local sliderW = slider.AbsoluteSize.X
         local rel = math.clamp(mouseX - sliderX, 0, sliderW)
@@ -85,8 +88,8 @@ runService.RenderStepped:Connect(function()
         speed = 16 + math.floor(perc * 100)
         sliderButton.Position = UDim2.new(perc, -10, 0, -7.5)
         speedText.Text = "Velocidade: " .. speed
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = speed
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
         end
     end
 end)
@@ -111,7 +114,7 @@ flyButton.MouseButton1Click:Connect(function()
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 
     if flyEnabled then
-        local char = player.Character
+        local char = LocalPlayer.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
             local root = char:FindFirstChild("HumanoidRootPart")
@@ -128,7 +131,7 @@ flyButton.MouseButton1Click:Connect(function()
                 bodyVelocity.MaxForce = Vector3.new(9e4, 9e4, 9e4)
                 bodyVelocity.Parent = root
 
-                flyConnection = runService.RenderStepped:Connect(function()
+                flyConnection = RunService.RenderStepped:Connect(function()
                     if not flyEnabled then
                         bodyGyro:Destroy()
                         bodyVelocity:Destroy()
@@ -137,14 +140,14 @@ flyButton.MouseButton1Click:Connect(function()
                         return
                     end
                     local move = Vector3.new(0, 0, 0)
-                    if userInput:IsKeyDown(Enum.KeyCode.W) then move = move + workspace.CurrentCamera.CFrame.LookVector end
-                    if userInput:IsKeyDown(Enum.KeyCode.S) then move = move - workspace.CurrentCamera.CFrame.LookVector end
-                    if userInput:IsKeyDown(Enum.KeyCode.A) then move = move - workspace.CurrentCamera.CFrame.RightVector end
-                    if userInput:IsKeyDown(Enum.KeyCode.D) then move = move + workspace.CurrentCamera.CFrame.RightVector end
-                    if userInput:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end
-                    if userInput:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + Camera.CFrame.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - Camera.CFrame.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - Camera.CFrame.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + Camera.CFrame.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end
                     bodyVelocity.Velocity = move * 50
-                    bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+                    bodyGyro.CFrame = Camera.CFrame
                 end)
             end
         end
@@ -153,7 +156,7 @@ flyButton.MouseButton1Click:Connect(function()
             flyConnection:Disconnect()
             flyConnection = nil
         end
-        local char = player.Character
+        local char = LocalPlayer.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
             if humanoid then
@@ -190,9 +193,9 @@ noclipButton.MouseButton1Click:Connect(function()
     noclipButton.BackgroundColor3 = noclipEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 
     if noclipEnabled then
-        noclipConnection = runService.Stepped:Connect(function()
-            if player.Character then
-                for _, part in pairs(player.Character:GetChildren()) do
+        noclipConnection = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetChildren()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = false
                     end
@@ -207,4 +210,156 @@ noclipButton.MouseButton1Click:Connect(function()
     end
 end)
 
-print("✅ Script completo: Velocidade, Fly e Noclip funcionando!")
+-- ========== BOTÃO DO ESP ==========
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(0.9, 0, 0, 35)
+espButton.Position = UDim2.new(0.05, 0, 0, 160)
+espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+espButton.Text = "ESP: ON"
+espButton.TextColor3 = Color3.new(1, 1, 1)
+espButton.Font = Enum.Font.GothamSemibold
+espButton.TextSize = 16
+espButton.Parent = area
+Instance.new("UICorner", espButton).CornerRadius = UDim.new(0, 6)
+
+-- Variáveis do ESP
+local espEnabled = true
+local espObjects = {}
+
+-- Função para criar ESP em um jogador
+local function createESP(player)
+    if player == LocalPlayer or not player.Character then return end
+    
+    local character = player.Character
+    local rootPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso")
+    if not rootPart then return end
+    
+    -- Remove ESP antigo se existir
+    if espObjects[player] then
+        for _, obj in pairs(espObjects[player]) do
+            pcall(function() obj:Destroy() end)
+        end
+    end
+    
+    -- Criar Highlight (contorno)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "MeuESP"
+    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.new(1, 1, 1)
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = character
+    
+    -- Criar BillboardGui (nome e distância)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "MeuESP_Text"
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.Parent = rootPart
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0.6, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    nameLabel.TextStrokeTransparency = 0.3
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = billboard
+    
+    local distLabel = Instance.new("TextLabel")
+    distLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    distLabel.Position = UDim2.new(0, 0, 0.6, 0)
+    distLabel.BackgroundTransparency = 1
+    distLabel.Text = "0m"
+    distLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
+    distLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    distLabel.TextStrokeTransparency = 0.3
+    distLabel.TextScaled = true
+    distLabel.Font = Enum.Font.Gotham
+    distLabel.Parent = billboard
+    
+    espObjects[player] = {highlight, billboard}
+end
+
+-- Criar ESP para jogadores existentes
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        task.spawn(function()
+            if player.Character then
+                task.wait(1)
+                createESP(player)
+            end
+        end)
+    end
+end
+
+-- Eventos de jogadores
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.wait(1)
+        createESP(player)
+    end)
+    if player.Character then
+        task.wait(1)
+        createESP(player)
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if espObjects[player] then
+        for _, obj in pairs(espObjects[player]) do
+            pcall(function() obj:Destroy() end)
+        end
+        espObjects[player] = nil
+    end
+end)
+
+-- Atualizar ESP (cor baseada na vida e distância)
+RunService.RenderStepped:Connect(function()
+    for player, objects in pairs(espObjects) do
+        if player and player.Character and player.Character.Parent then
+            local rootPart = player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChild("Torso")
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            
+            if rootPart and humanoid and humanoid.Health > 0 then
+                if espEnabled then
+                    -- Calcular distância
+                    local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
+                    
+                    -- Atualizar cor baseada na saúde
+                    local healthPercent = humanoid.Health / humanoid.MaxHealth
+                    local healthColor = Color3.new(1 - healthPercent, healthPercent, 0)
+                    
+                    objects[1].FillColor = healthColor
+                    objects[1].Enabled = true
+                    
+                    objects[2].Enabled = true
+                    -- Atualizar distância (o nome já está fixo)
+                    for _, label in pairs(objects[2]:GetChildren()) do
+                        if label:IsA("TextLabel") and label.Text:match("%.1fm") then
+                            label.Text = string.format("%.1fm", dist)
+                        end
+                    end
+                else
+                    objects[1].Enabled = false
+                    objects[2].Enabled = false
+                end
+            else
+                objects[1].Enabled = false
+                objects[2].Enabled = false
+            end
+        end
+    end
+end)
+
+-- Botão para ligar/desligar ESP
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espButton.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+    espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
+end)
+
+print("✅ Script completo com ESP carregado!")
