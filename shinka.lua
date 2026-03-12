@@ -1,17 +1,17 @@
--- Shinka Hub + Minimizar + Animação (Passo 2)
+-- Shinka Hub + Minimizar + Animação + Aimbot Corrigido (Passo 3)
 local p=game:GetService"Players"local rs=game:GetService"RunService"local u=game:GetService"UserInputService"local l=game:GetService"Lighting"local lp=p.LocalPlayer local c=workspace.CurrentCamera
-local ts=game:GetService"TweenService"  -- Adicionado para animação
+local ts=game:GetService"TweenService"
 local g=Instance.new("ScreenGui",lp.PlayerGui)
 g.ResetOnSpawn=false
 
 -- Janela principal
 local f=Instance.new("Frame",g)
-f.Size=UDim2.new(0,300,0,0)  -- Começa com altura 0 para animação
+f.Size=UDim2.new(0,300,0,0)
 f.Position=UDim2.new(0.5,-150,0.5,-200)
 f.BackgroundColor3=Color3.fromRGB(30,30,35)
 f.Active=true
 f.Draggable=true
-f.ClipsDescendants=true  -- Necessário para animação
+f.ClipsDescendants=true
 Instance.new("UICorner",f).CornerRadius=UDim.new(0,8)
 
 -- Barra de título
@@ -63,7 +63,7 @@ reopen.TextSize=20
 reopen.Visible=false
 reopen.MouseButton1Click:Connect(function()
     g.Enabled=true
-    f.Size=UDim2.new(0,300,0,0)  -- Reinicia altura para animar novamente
+    f.Size=UDim2.new(0,300,0,0)
     ts:Create(f, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0,300,0,400)}):Play()
     reopen.Visible=false
 end)
@@ -200,7 +200,7 @@ local nfBtn=novobtn(v,50,"No Fog: OFF",nil,function()
     nfBtn.BackgroundColor3=nf and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
 
--- ESP (apenas informativa, funcional em segundo plano)
+-- ESP
 local espF=Instance.new("Frame",cont)
 espF.Size=UDim2.new(1,0,1,0)
 espF.BackgroundTransparency=1
@@ -212,7 +212,7 @@ espTxt.Text="ESP ativo automaticamente.\nContorno colorido por vida."
 espTxt.TextColor3=Color3.fromRGB(200,200,200)
 espTxt.TextWrapped=true
 
--- Código ESP (mesmo de antes)
+-- Código ESP
 local esp={}
 local function criarESP(pl)
     if pl==lp or not pl.Character then return end
@@ -282,63 +282,88 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Aimbot (simples, sem detecção de time por enquanto)
+-- ===== AIMBOT CORRIGIDO =====
 local aF=Instance.new("Frame",cont)
 aF.Size=UDim2.new(1,0,1,0)
 aF.BackgroundTransparency=1
 aF.Visible=false
+
+-- Botão liga/desliga
 local aimOn=false
 local aimBtn=novobtn(aF,10,"Aimbot: OFF",nil,function()
     aimOn=not aimOn
     aimBtn.Text="Aimbot: "..(aimOn and"ON"or"OFF")
     aimBtn.BackgroundColor3=aimOn and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
+
+-- FOV Slider (corrigido: só arrasta o botão)
 local fovTxt=Instance.new("TextLabel",aF)
 fovTxt.Size=UDim2.new(0.9,0,0,20)
 fovTxt.Position=UDim2.new(0.05,0,0,70)
 fovTxt.Text="FOV: 90"
 fovTxt.TextColor3=Color3.fromRGB(200,200,200)
 fovTxt.TextXAlignment=Enum.TextXAlignment.Left
+
 local fovS=Instance.new("Frame",aF)
 fovS.Size=UDim2.new(0.9,0,0,5)
 fovS.Position=UDim2.new(0.05,0,0,95)
 fovS.BackgroundColor3=Color3.fromRGB(80,80,90)
+
 local fovB=Instance.new("TextButton",fovS)
 fovB.Size=UDim2.new(0,20,0,20)
 fovB.Position=UDim2.new(0.5,-10,0,-7.5)
 fovB.BackgroundColor3=Color3.fromRGB(100,0,255)
 fovB.Text=""
+
 local fovVal=90
+local fovDragging=false
+
+-- Só arrasta quando clica no botão
 fovB.MouseButton1Down:Connect(function()
-    local d; d=rs.RenderStepped:Connect(function()
+    fovDragging=true
+end)
+
+u.InputEnded:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then
+        fovDragging=false
+    end
+end)
+
+rs.RenderStepped:Connect(function()
+    if fovDragging then
         local mx=u:GetMouseLocation().X
         local sx=fovS.AbsolutePosition.X
         local sw=fovS.AbsoluteSize.X
-        local perc=(mx-sx)/sw
-        if perc<0 then perc=0 elseif perc>1 then perc=1 end
+        local rel=math.clamp(mx-sx,0,sw)
+        local perc=rel/sw
         fovVal=30+math.floor(perc*270)
         fovB.Position=UDim2.new(perc,-10,0,-7.5)
         fovTxt.Text="FOV: "..fovVal
-    end)
-    u.InputEnded:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 then d:Disconnect() end
-    end)
+    end
 end)
+
+-- Função para verificar se é inimigo
+local function isEnemy(player)
+    if not lp.Team or not player.Team then return true end
+    return lp.Team ~= player.Team
+end
+
+-- Aimbot loop (mira na cabeça)
 rs.RenderStepped:Connect(function()
     if aimOn then
         local closest=nil
         local closestDist=fovVal
         for _,pl in pairs(p:GetPlayers()) do
-            if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 then
-                local r=pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
-                if r then
-                    local sp,on=c:WorldToScreenPoint(r.Position)
+            if pl~=lp and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health>0 and isEnemy(pl) then
+                local head=pl.Character:FindFirstChild("Head")
+                if head then
+                    local sp,on=c:WorldToScreenPoint(head.Position)
                     if on then
                         local mp=u:GetMouseLocation()
                         local dist=(Vector2.new(sp.X,sp.Y)-mp).Magnitude
                         if dist<closestDist then
                             closestDist=dist
-                            closest=r
+                            closest=head
                         end
                     end
                 end
@@ -360,4 +385,4 @@ for i=1,4 do
     end)
 end
 
-print("Shinka Hub + Minimizar + Animação carregado! Botão SH para reabrir.")
+print("Shinka Hub + Passo 3 carregado! Aimbot corrigido: mira na cabeça e só inimigos.")
