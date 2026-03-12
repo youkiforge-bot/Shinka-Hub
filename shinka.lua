@@ -1,4 +1,4 @@
--- Shinka Hub - Aba Movement (teste)
+-- Shinka Hub - Aba Movement (funcional)
 local p = game:GetService("Players")
 local rs = game:GetService("RunService")
 local u = game:GetService("UserInputService")
@@ -9,7 +9,6 @@ local hub = Instance.new("ScreenGui")
 hub.Name = "ShinkaHub"
 hub.Parent = pg
 
--- Janela principal
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, 300, 0, 300)
 main.Position = UDim2.new(0.5, -150, 0.5, -150)
@@ -19,7 +18,6 @@ main.Draggable = true
 main.Parent = hub
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,8)
 
--- Título
 local titulo = Instance.new("TextLabel")
 titulo.Size = UDim2.new(1,0,0,30)
 titulo.Text = "Shinka Hub - Movement"
@@ -28,7 +26,6 @@ titulo.BackgroundColor3 = Color3.fromRGB(50,50,55)
 titulo.Parent = main
 Instance.new("UICorner", titulo).CornerRadius = UDim.new(0,8)
 
--- Slider de velocidade
 local spdTxt = Instance.new("TextLabel")
 spdTxt.Size = UDim2.new(0.9,0,0,20)
 spdTxt.Position = UDim2.new(0.05,0,0,40)
@@ -50,7 +47,6 @@ sliderBtn.BackgroundColor3 = Color3.fromRGB(100,0,255)
 sliderBtn.Text = ""
 sliderBtn.Parent = slider
 
--- Botão Fly
 local flyBtn = Instance.new("TextButton")
 flyBtn.Size = UDim2.new(0.9,0,0,35)
 flyBtn.Position = UDim2.new(0.05,0,0,100)
@@ -60,7 +56,6 @@ flyBtn.TextColor3 = Color3.new(1,1,1)
 flyBtn.Parent = main
 Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0,6)
 
--- Botão Noclip
 local noclipBtn = Instance.new("TextButton")
 noclipBtn.Size = UDim2.new(0.9,0,0,35)
 noclipBtn.Position = UDim2.new(0.05,0,0,145)
@@ -70,7 +65,7 @@ noclipBtn.TextColor3 = Color3.new(1,1,1)
 noclipBtn.Parent = main
 Instance.new("UICorner", noclipBtn).CornerRadius = UDim.new(0,6)
 
--- LÓGICA DO SLIDER
+-- Lógica do slider
 local spd = 16
 sliderBtn.MouseButton1Down:Connect(function()
     local drag
@@ -94,22 +89,20 @@ sliderBtn.MouseButton1Down:Connect(function()
     end)
 end)
 
--- LÓGICA DO FLY (simplificada - apenas muda o texto por enquanto)
+-- Lógica do Fly (apenas visual por enquanto)
 local fly = false
 flyBtn.MouseButton1Click:Connect(function()
     fly = not fly
     flyBtn.Text = "Fly: " .. (fly and "ON" or "OFF")
     flyBtn.BackgroundColor3 = fly and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
-    -- Aqui você pode adicionar a lógica real de fly depois
 end)
 
--- LÓGICA DO NOCLIP (simplificada)
+-- Lógica do Noclip (apenas visual)
 local noclip = false
 noclipBtn.MouseButton1Click:Connect(function()
     noclip = not noclip
     noclipBtn.Text = "Noclip: " .. (noclip and "ON" or "OFF")
     noclipBtn.BackgroundColor3 = noclip and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
-    -- Lógica real pode ser adicionada depois
 end)
 
 print("Shinka Hub - Movement carregado!")
