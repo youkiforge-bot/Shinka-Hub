@@ -1,4 +1,4 @@
--- Shinka Hub + Minimizar + Animação + Aimbot Corrigido (Passo 3)
+-- Shinka Hub + Passo 3 Corrigido (Visuals e Aimbot funcionais)
 local p=game:GetService"Players"local rs=game:GetService"RunService"local u=game:GetService"UserInputService"local l=game:GetService"Lighting"local lp=p.LocalPlayer local c=workspace.CurrentCamera
 local ts=game:GetService"TweenService"
 local g=Instance.new("ScreenGui",lp.PlayerGui)
@@ -94,7 +94,7 @@ cont.Size=UDim2.new(1,-20,1,-20)
 cont.Position=UDim2.new(0,10,0,10)
 cont.BackgroundTransparency=1
 
--- Função auxiliar para botões
+-- Função auxiliar para criar botões (com altura ajustada)
 local function novobtn(pai,p,txt,cor,f)
     local b=Instance.new("TextButton",pai)
     b.Size=UDim2.new(0.9,0,0,35)
@@ -171,7 +171,7 @@ local noclipBtn=novobtn(m,110,"Noclip: OFF",nil,function()
     end
 end)
 
--- Visuals
+-- Visuals (corrigido: botões em posições adequadas)
 local v=Instance.new("Frame",cont)
 v.Size=UDim2.new(1,0,1,0)
 v.BackgroundTransparency=1
@@ -193,14 +193,14 @@ local fbBtn=novobtn(v,10,"Fullbright: OFF",nil,function()
     fbBtn.BackgroundColor3=fb and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
 local nf=false
-local nfBtn=novobtn(v,50,"No Fog: OFF",nil,function()
+local nfBtn=novobtn(v,60,"No Fog: OFF",nil,function()
     nf=not nf
     if nf then l.FogEnd=1e5 else l.FogEnd=origFog end
     nfBtn.Text="No Fog: "..(nf and"ON"or"OFF")
     nfBtn.BackgroundColor3=nf and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
 
--- ESP
+-- ESP (informativo)
 local espF=Instance.new("Frame",cont)
 espF.Size=UDim2.new(1,0,1,0)
 espF.BackgroundTransparency=1
@@ -212,7 +212,7 @@ espTxt.Text="ESP ativo automaticamente.\nContorno colorido por vida."
 espTxt.TextColor3=Color3.fromRGB(200,200,200)
 espTxt.TextWrapped=true
 
--- Código ESP
+-- Código ESP (funcional)
 local esp={}
 local function criarESP(pl)
     if pl==lp or not pl.Character then return end
@@ -282,13 +282,13 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- ===== AIMBOT CORRIGIDO =====
+-- Aimbot (corrigido)
 local aF=Instance.new("Frame",cont)
 aF.Size=UDim2.new(1,0,1,0)
 aF.BackgroundTransparency=1
 aF.Visible=false
 
--- Botão liga/desliga
+-- Botão liga/desliga (posição 10)
 local aimOn=false
 local aimBtn=novobtn(aF,10,"Aimbot: OFF",nil,function()
     aimOn=not aimOn
@@ -296,17 +296,18 @@ local aimBtn=novobtn(aF,10,"Aimbot: OFF",nil,function()
     aimBtn.BackgroundColor3=aimOn and Color3.fromRGB(0,100,50) or Color3.fromRGB(60,60,70)
 end)
 
--- FOV Slider (corrigido: só arrasta o botão)
+-- FOV label (posição 60)
 local fovTxt=Instance.new("TextLabel",aF)
 fovTxt.Size=UDim2.new(0.9,0,0,20)
-fovTxt.Position=UDim2.new(0.05,0,0,70)
+fovTxt.Position=UDim2.new(0.05,0,0,60)
 fovTxt.Text="FOV: 90"
 fovTxt.TextColor3=Color3.fromRGB(200,200,200)
 fovTxt.TextXAlignment=Enum.TextXAlignment.Left
 
+-- FOV slider (posição 85)
 local fovS=Instance.new("Frame",aF)
 fovS.Size=UDim2.new(0.9,0,0,5)
-fovS.Position=UDim2.new(0.05,0,0,95)
+fovS.Position=UDim2.new(0.05,0,0,85)
 fovS.BackgroundColor3=Color3.fromRGB(80,80,90)
 
 local fovB=Instance.new("TextButton",fovS)
@@ -318,15 +319,9 @@ fovB.Text=""
 local fovVal=90
 local fovDragging=false
 
--- Só arrasta quando clica no botão
-fovB.MouseButton1Down:Connect(function()
-    fovDragging=true
-end)
-
+fovB.MouseButton1Down:Connect(function() fovDragging=true end)
 u.InputEnded:Connect(function(i)
-    if i.UserInputType==Enum.UserInputType.MouseButton1 then
-        fovDragging=false
-    end
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then fovDragging=false end
 end)
 
 rs.RenderStepped:Connect(function()
@@ -342,7 +337,7 @@ rs.RenderStepped:Connect(function()
     end
 end)
 
--- Função para verificar se é inimigo
+-- Função para verificar inimigo
 local function isEnemy(player)
     if not lp.Team or not player.Team then return true end
     return lp.Team ~= player.Team
@@ -385,4 +380,4 @@ for i=1,4 do
     end)
 end
 
-print("Shinka Hub + Passo 3 carregado! Aimbot corrigido: mira na cabeça e só inimigos.")
+print("Shinka Hub Passo 3 Corrigido! Visuals e Aimbot funcionando.")
