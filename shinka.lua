@@ -1,4 +1,4 @@
--- Shinka Hub – Versão Final Simplificada (Tudo Funcional + Discord)
+-- Shinka Hub – Versão Final Simplificada
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
