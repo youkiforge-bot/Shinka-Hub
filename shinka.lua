@@ -1,5 +1,5 @@
 -- =============================================
--- MEU SCRIPT - VELOCIDADE + FLY + NOCLIP + ESP
+-- MEU SCRIPT - VELOCIDADE (COM BOTÃO) + FLY + NOCLIP + ESP
 -- =============================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,10 +11,10 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "MeuScript"
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Janela principal
+-- Janela principal (altura ajustada)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 320) -- Aumentei para caber o ESP
-frame.Position = UDim2.new(0.5, -150, 0.5, -160)
+frame.Size = UDim2.new(0, 300, 0, 360)
+frame.Position = UDim2.new(0.5, -150, 0.5, -180)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 frame.Active = true
 frame.Draggable = true
@@ -38,22 +38,38 @@ area.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
 area.Parent = frame
 Instance.new("UICorner", area).CornerRadius = UDim.new(0, 6)
 
--- ========== VELOCIDADE ==========
+-- ========== VELOCIDADE (COM BOTÃO LIGA/DESLIGA) ==========
+local speedEnabled = true
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(0.9, 0, 0, 30)
+speedButton.Position = UDim2.new(0.05, 0, 0, 10)
+speedButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
+speedButton.Text = "Speed: ON"
+speedButton.TextColor3 = Color3.new(1, 1, 1)
+speedButton.Font = Enum.Font.GothamSemibold
+speedButton.TextSize = 16
+speedButton.Parent = area
+Instance.new("UICorner", speedButton).CornerRadius = UDim.new(0, 6)
+
+-- Texto do slider (só aparece se speedEnabled)
 local speedText = Instance.new("TextLabel")
 speedText.Size = UDim2.new(0.9, 0, 0, 25)
-speedText.Position = UDim2.new(0.05, 0, 0, 10)
+speedText.Position = UDim2.new(0.05, 0, 0, 50)
 speedText.BackgroundTransparency = 1
 speedText.Text = "Velocidade: 16"
 speedText.TextColor3 = Color3.fromRGB(200, 200, 200)
 speedText.Font = Enum.Font.Gotham
-speedText.TextSize = 16
+speedText.TextSize = 14
 speedText.TextXAlignment = Enum.TextXAlignment.Left
+speedText.Visible = true
 speedText.Parent = area
 
+-- Slider
 local slider = Instance.new("Frame")
 slider.Size = UDim2.new(0.9, 0, 0, 5)
-slider.Position = UDim2.new(0.05, 0, 0, 40)
+slider.Position = UDim2.new(0.05, 0, 0, 80)
 slider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+slider.Visible = true
 slider.Parent = area
 Instance.new("UICorner", slider).CornerRadius = UDim.new(1, 0)
 
@@ -65,9 +81,34 @@ sliderButton.Text = ""
 sliderButton.Parent = slider
 Instance.new("UICorner", sliderButton).CornerRadius = UDim.new(1, 0)
 
+-- Variáveis de controle
 local dragging = false
 local speed = 16
 
+-- Lógica do botão de speed
+speedButton.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    speedButton.Text = "Speed: " .. (speedEnabled and "ON" or "OFF")
+    speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
+    
+    -- Mostrar/esconder os controles de velocidade
+    speedText.Visible = speedEnabled
+    slider.Visible = speedEnabled
+    
+    -- Se desligar, restaura a velocidade padrão (16)
+    if not speedEnabled then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+    else
+        -- Ao religar, aplica a velocidade atual do slider
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
+        end
+    end
+end)
+
+-- Eventos do slider
 sliderButton.MouseButton1Down:Connect(function()
     dragging = true
 end)
@@ -79,7 +120,7 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 RunService.RenderStepped:Connect(function()
-    if dragging then
+    if dragging and speedEnabled then
         local mouseX = UserInputService:GetMouseLocation().X
         local sliderX = slider.AbsolutePosition.X
         local sliderW = slider.AbsoluteSize.X
@@ -94,12 +135,12 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ========== FLY ==========
+-- ========== FLY (CORRIGIDO) ==========
 local flyEnabled = false
 local flyConnection = nil
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0.9, 0, 0, 35)
-flyButton.Position = UDim2.new(0.05, 0, 0, 70)
+flyButton.Position = UDim2.new(0.05, 0, 0, 120)
 flyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 flyButton.Text = "Fly: OFF"
 flyButton.TextColor3 = Color3.new(1, 1, 1)
@@ -114,6 +155,7 @@ flyButton.MouseButton1Click:Connect(function()
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 
     if flyEnabled then
+        -- Ativar fly
         local char = LocalPlayer.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
@@ -133,10 +175,10 @@ flyButton.MouseButton1Click:Connect(function()
 
                 flyConnection = RunService.RenderStepped:Connect(function()
                     if not flyEnabled then
-                        bodyGyro:Destroy()
-                        bodyVelocity:Destroy()
-                        humanoid.PlatformStand = false
-                        flyConnection:Disconnect()
+                        if bodyGyro and bodyGyro.Parent then bodyGyro:Destroy() end
+                        if bodyVelocity and bodyVelocity.Parent then bodyVelocity:Destroy() end
+                        if humanoid then humanoid.PlatformStand = false end
+                        if flyConnection then flyConnection:Disconnect() end
                         return
                     end
                     local move = Vector3.new(0, 0, 0)
@@ -152,6 +194,7 @@ flyButton.MouseButton1Click:Connect(function()
             end
         end
     else
+        -- Desativar fly
         if flyConnection then
             flyConnection:Disconnect()
             flyConnection = nil
@@ -178,7 +221,7 @@ local noclipEnabled = false
 local noclipConnection = nil
 local noclipButton = Instance.new("TextButton")
 noclipButton.Size = UDim2.new(0.9, 0, 0, 35)
-noclipButton.Position = UDim2.new(0.05, 0, 0, 115)
+noclipButton.Position = UDim2.new(0.05, 0, 0, 165)
 noclipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 noclipButton.Text = "Noclip: OFF"
 noclipButton.TextColor3 = Color3.new(1, 1, 1)
@@ -211,10 +254,11 @@ noclipButton.MouseButton1Click:Connect(function()
 end)
 
 -- ========== BOTÃO DO ESP ==========
+local espEnabled = true
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(0.9, 0, 0, 35)
-espButton.Position = UDim2.new(0.05, 0, 0, 160)
-espButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+espButton.Position = UDim2.new(0.05, 0, 0, 210)
+espButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
 espButton.Text = "ESP: ON"
 espButton.TextColor3 = Color3.new(1, 1, 1)
 espButton.Font = Enum.Font.GothamSemibold
@@ -223,7 +267,6 @@ espButton.Parent = area
 Instance.new("UICorner", espButton).CornerRadius = UDim.new(0, 6)
 
 -- Variáveis do ESP
-local espEnabled = true
 local espObjects = {}
 
 -- Função para criar ESP em um jogador
@@ -317,7 +360,7 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Atualizar ESP (cor baseada na vida e distância)
+-- Atualizar ESP
 RunService.RenderStepped:Connect(function()
     for player, objects in pairs(espObjects) do
         if player and player.Character and player.Character.Parent then
@@ -326,18 +369,11 @@ RunService.RenderStepped:Connect(function()
             
             if rootPart and humanoid and humanoid.Health > 0 then
                 if espEnabled then
-                    -- Calcular distância
                     local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
-                    
-                    -- Atualizar cor baseada na saúde
                     local healthPercent = humanoid.Health / humanoid.MaxHealth
-                    local healthColor = Color3.new(1 - healthPercent, healthPercent, 0)
-                    
-                    objects[1].FillColor = healthColor
+                    objects[1].FillColor = Color3.new(1 - healthPercent, healthPercent, 0)
                     objects[1].Enabled = true
-                    
                     objects[2].Enabled = true
-                    -- Atualizar distância (o nome já está fixo)
                     for _, label in pairs(objects[2]:GetChildren()) do
                         if label:IsA("TextLabel") and label.Text:match("%.1fm") then
                             label.Text = string.format("%.1fm", dist)
@@ -355,11 +391,11 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Botão para ligar/desligar ESP
+-- Botão do ESP
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     espButton.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
     espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 end)
 
-print("✅ Script completo com ESP carregado!")
+print("✅ Script completo com botão de Speed e Fly corrigido!")
