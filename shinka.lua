@@ -27,13 +27,13 @@ getgenv().PredictAimColor = Color3.fromRGB(0, 255, 255)
 
 local Player = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ShinkaHub_VL_Specific"
+ScreenGui.Name = "ShinkaHub_VL"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Destroi GUI antiga
 for _, v in ipairs(CoreGui:GetChildren()) do
-    if v.Name == "ShinkaHub_VL_Specific" then
+    if v.Name == "ShinkaHub_VL" then
         v:Destroy()
     end
 end
@@ -74,8 +74,8 @@ end
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 700, 0, 550)
-mainFrame.Position = UDim2.new(0.5, -350, 0.5, -275)
+mainFrame.Size = UDim2.new(0, 720, 0, 560)
+mainFrame.Position = UDim2.new(0.5, -360, 0.5, -280)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
@@ -110,7 +110,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
 titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "ShinkaHub | Volleyball Legends (Funcional)"
+titleLabel.Text = "ShinkaHub | Volleyball Legends"
 titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
@@ -271,7 +271,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)-- ===================================================================
 -- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 2/4)
--- PAINEL DE ABAS E FUNÇÕES DE CRIAÇÃO DE UI
+-- PAINEL DE ABAS E FUNÇÕES DE CRIAÇÃO DE UI (COM ESPAÇAMENTO)
 -- ===================================================================
 
 -- Painel de abas
@@ -287,7 +287,7 @@ tabsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
 tabsPanel.Parent = mainContentContainer
 
 local tabsLayout = Instance.new("UIListLayout")
-tabsLayout.Padding = UDim.new(0, 10)
+tabsLayout.Padding = UDim.new(0, 12)
 tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
@@ -370,21 +370,22 @@ for _, tab in ipairs(tabsData) do
 end
 tabsPanel.CanvasSize = UDim2.new(0, 0, 0, tabsLayout.AbsoluteContentSize.Y + 10)
 
--- Layout das páginas
+-- Layout das páginas (com padding generoso entre seções)
 for name, page in pairs(pages) do
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 20)
+    layout.Padding = UDim.new(0, 25)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = page
 end
 
--- Funções de criação de elementos
+-- Funções de criação de elementos (com espaçamento interno)
+
 local function createToggle(parent, name, label, default)
     local container = Instance.new("Frame")
     container.Name = name .. "Container"
-    container.Size = UDim2.new(1, -10, 0, 45)
+    container.Size = UDim2.new(1, -10, 0, 50)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -443,7 +444,7 @@ end
 local function createSlider(parent, name, label, min, max, default, suffix)
     local container = Instance.new("Frame")
     container.Name = name .. "SliderContainer"
-    container.Size = UDim2.new(1, -10, 0, 55)
+    container.Size = UDim2.new(1, -10, 0, 65)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -473,7 +474,7 @@ local function createSlider(parent, name, label, min, max, default, suffix)
     local sliderBg = Instance.new("Frame")
     sliderBg.Name = "SliderBg"
     sliderBg.Size = UDim2.new(1, 0, 0, 8)
-    sliderBg.Position = UDim2.new(0, 0, 0, 28)
+    sliderBg.Position = UDim2.new(0, 0, 0, 30)
     sliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
     sliderBg.Parent = container
     createCorner(sliderBg, 4)
@@ -533,7 +534,7 @@ end
 local function createColorPicker(parent, name, label, defaultColor)
     local container = Instance.new("Frame")
     container.Name = name .. "ColorContainer"
-    container.Size = UDim2.new(1, -10, 0, 45)
+    container.Size = UDim2.new(1, -10, 0, 50)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -566,8 +567,8 @@ local function createColorPicker(parent, name, label, defaultColor)
 
     pickerButton.MouseButton1Click:Connect(function()
         local menu = Instance.new("Frame")
-        menu.Size = UDim2.new(0, 200, 0, 200)
-        menu.Position = UDim2.new(0.5, -100, 0.5, -100)
+        menu.Size = UDim2.new(0, 220, 0, 220)
+        menu.Position = UDim2.new(0.5, -110, 0.5, -110)
         menu.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
         menu.Parent = ScreenGui
         createCorner(menu, 8)
@@ -603,7 +604,7 @@ local function createColorPicker(parent, name, label, defaultColor)
 
         local function createColorOption(color)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 40, 0, 40)
+            btn.Size = UDim2.new(0, 45, 0, 45)
             btn.BackgroundColor3 = color
             btn.Text = ""
             btn.Parent = grid
@@ -621,7 +622,7 @@ local function createColorPicker(parent, name, label, defaultColor)
         end
 
         local gridLayout = Instance.new("UIGridLayout")
-        gridLayout.CellSize = UDim2.new(0, 45, 0, 45)
+        gridLayout.CellSize = UDim2.new(0, 50, 0, 50)
         gridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
         gridLayout.FillDirection = Enum.FillDirection.Horizontal
         gridLayout.StartCorner = Enum.StartCorner.TopLeft
@@ -667,6 +668,14 @@ local function createSection(parent, title)
     content.BackgroundTransparency = 1
     content.Parent = section
 
+    -- Layout interno da seção para espaçar os elementos
+    local contentLayout = Instance.new("UIListLayout")
+    contentLayout.Padding = UDim.new(0, 12)
+    contentLayout.FillDirection = Enum.FillDirection.Vertical
+    contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    contentLayout.Parent = content
+
     return section, content
 end-- ===================================================================
 -- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 3/4)
@@ -677,7 +686,7 @@ end-- ===================================================================
 local hitboxPage = pages["Hitbox"]
 
 local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
-ballSection.Size = UDim2.new(1, 0, 0, 180)
+ballSection.Size = UDim2.new(1, 0, 0, 200)  -- Altura para 3 elementos + padding
 
 createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
 createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1.0, 5.0, 2.0, "x")
@@ -687,18 +696,17 @@ createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().Ball
 local servePage = pages["Serve"]
 
 local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
-serveSection.Size = UDim2.new(1, 0, 0, 60)
-
+serveSection.Size = UDim2.new(1, 0, 0, 80)  -- Altura para 1 elemento + padding
 createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)-- ===================================================================
 -- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 4/4)
--- CONTEÚDO DAS ABAS JUMPESP E PREDICT + HEARTBEAT
+-- CONTEÚDO DAS ABAS JUMPESP E PREDICT + HEARTBEAT FUNCIONAL
 -- ===================================================================
 
 -- ========== ABA JUMP ESP ==========
 local jumpPage = pages["JumpESP"]
 
 local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
-jumpSection.Size = UDim2.new(1, 0, 0, 130)
+jumpSection.Size = UDim2.new(1, 0, 0, 140)  -- Altura para 2 elementos + padding
 
 createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
 createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
@@ -707,49 +715,86 @@ createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpE
 local predictPage = pages["Predict"]
 
 local predictSection, predictContent = createSection(predictPage, "Predict Aim")
-predictSection.Size = UDim2.new(1, 0, 0, 180)
+predictSection.Size = UDim2.new(1, 0, 0, 200)  -- Altura para 3 elementos + padding
 
 createToggle(predictContent, "PredictAim", "Enable Predict Aim", false)
 createSlider(predictContent, "PredictionLength", "Prediction Length", 1, 20, 5, " studs")
 createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)
 
--- ========== HEARTBEAT LOOP ==========
+-- ========== HEARTBEAT LOOP - FUNÇÕES ATIVAS ==========
 
 local hitboxOverlay = nil
 local jumpESPLines = {}
 local predictLines = {}
 
+-- Função para encontrar a bola (vários nomes possíveis)
 local function findBall()
-    return Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
+    local ballNames = {"Ball", "Volleyball", "Vball", "GameBall"}
+    for _, name in ipairs(ballNames) do
+        local ball = Workspace:FindFirstChild(name)
+        if ball then return ball end
+    end
+    return nil
 end
 
+-- Função para encontrar remote de saque (vários nomes possíveis)
 local function findServeRemote()
-    local remote = ReplicatedStorage:FindFirstChild("Serve") or 
-                   (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Serve"))
-    return remote
+    local remoteNames = {"Serve", "ServeBall", "HitBall", "StrongServe", "PowerServe"}
+    for _, name in ipairs(remoteNames) do
+        local remote = ReplicatedStorage:FindFirstChild(name)
+        if remote then return remote end
+        local folder = ReplicatedStorage:FindFirstChild("Remotes") or ReplicatedStorage:FindFirstChild("Events")
+        if folder then
+            remote = folder:FindFirstChild(name)
+            if remote then return remote end
+        end
+    end
+    return nil
+end
+
+-- Função para criar uma beam (linha) entre dois pontos
+local function createBeam(part, color, width)
+    local attach1 = Instance.new("Attachment")
+    attach1.Name = "BeamAttach1"
+    attach1.Parent = part
+    
+    local attach2 = Instance.new("Attachment")
+    attach2.Name = "BeamAttach2"
+    attach2.Parent = part
+    
+    local beam = Instance.new("Beam")
+    beam.Attachment0 = attach1
+    beam.Attachment1 = attach2
+    beam.Width0 = width
+    beam.Width1 = width
+    beam.Transparency = NumberSequence.new(0)
+    beam.Color = ColorSequence.new(color)
+    beam.Parent = Workspace
+    
+    return {attach1, attach2, beam}
 end
 
 RunService.Heartbeat:Connect(function()
     local character = Player.Character
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
     local ball = findBall()
+    local ballPart = ball and (ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart"))
 
-    -- BALL HITBOX
-    if getgenv().BallHitbox and ball then
+    -- ===== 1. BALL HITBOX =====
+    if getgenv().BallHitbox and ballPart then
         if not hitboxOverlay or not hitboxOverlay.Parent then
             hitboxOverlay = Instance.new("Part")
             hitboxOverlay.Name = "HitboxOverlay"
             hitboxOverlay.Anchored = true
             hitboxOverlay.CanCollide = false
-            hitboxOverlay.Transparency = 0.5
-            hitboxOverlay.Shape = Enum.PartType.Ball
+            hitboxOverlay.Transparency = 0.6
             hitboxOverlay.Material = Enum.Material.ForceField
+            hitboxOverlay.Shape = Enum.PartType.Ball
             hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
-            hitboxOverlay.BrickColor = BrickColor.new(getgenv().BallHitboxColor)
             hitboxOverlay.Color = getgenv().BallHitboxColor
             hitboxOverlay.Parent = Workspace
         else
-            hitboxOverlay.CFrame = ball:GetPivot()
+            hitboxOverlay.CFrame = ballPart.CFrame
             hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
             hitboxOverlay.Color = getgenv().BallHitboxColor
         end
@@ -760,21 +805,27 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- AUTO STRONG SERVE
+    -- ===== 2. AUTO STRONG SERVE =====
     if getgenv().AutoStrongServe then
         local remote = findServeRemote()
         if remote then
-            remote:FireServer(100) -- força máxima
+            -- Tenta enviar com parâmetros comuns: força máxima ou "strong"
+            pcall(function()
+                remote:FireServer(100)  -- força numérica
+                remote:FireServer("strong")  -- string
+                remote:FireServer(true)  -- boolean
+            end)
         end
     end
 
-    -- JUMP ESP
+    -- ===== 3. JUMP ESP =====
     if getgenv().JumpESP then
         for _, player in ipairs(Players:GetPlayers()) do
             if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
                 local hum = player.Character.Humanoid
                 local root = player.Character.HumanoidRootPart
-                if hum.FloorMaterial == Enum.Material.Air then
+                -- Verifica se está pulando (no ar)
+                if hum:GetState() == Enum.HumanoidStateType.Jumping or hum.FloorMaterial == Enum.Material.Air then
                     if not jumpESPLines[player] then
                         local attach1 = Instance.new("Attachment")
                         attach1.Name = "JumpESP_Attach1"
@@ -785,11 +836,10 @@ RunService.Heartbeat:Connect(function()
                         attach2.Parent = root
                         
                         local beam = Instance.new("Beam")
-                        beam.Name = "JumpESP_Beam"
                         beam.Attachment0 = attach1
                         beam.Attachment1 = attach2
-                        beam.Width0 = 0.2
-                        beam.Width1 = 0.2
+                        beam.Width0 = 0.3
+                        beam.Width1 = 0.3
                         beam.Transparency = NumberSequence.new(0)
                         beam.Color = ColorSequence.new(getgenv().JumpESPColor)
                         beam.Parent = Workspace
@@ -821,50 +871,46 @@ RunService.Heartbeat:Connect(function()
         jumpESPLines = {}
     end
 
-    -- PREDICT AIM
-    if getgenv().PredictAim and ball and rootPart then
-        local ballPart = ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart")
-        if ballPart then
-            local velocity = ballPart.Velocity
-            local magnitude = velocity.Magnitude
-            if magnitude > 0.1 then
-                local direction = velocity.Unit
-                local startPos = ballPart.Position
-                local endPos = startPos + direction * getgenv().PredictionLength
+    -- ===== 4. PREDICT AIM =====
+    if getgenv().PredictAim and ballPart and rootPart then
+        local velocity = ballPart.Velocity
+        local speed = velocity.Magnitude
+        if speed > 0.5 then
+            local direction = velocity.Unit
+            local startPos = ballPart.Position
+            local endPos = startPos + direction * getgenv().PredictionLength
+            
+            if not predictLines["main"] then
+                local attach1 = Instance.new("Attachment")
+                attach1.Name = "Predict_Attach1"
+                attach1.Parent = ballPart
                 
-                if not predictLines["main"] then
-                    local attach1 = Instance.new("Attachment")
-                    attach1.Name = "Predict_Attach1"
-                    attach1.Parent = ballPart
-                    
-                    local attach2 = Instance.new("Attachment")
-                    attach2.Name = "Predict_Attach2"
-                    attach2.Parent = ballPart
-                    
-                    local beam = Instance.new("Beam")
-                    beam.Name = "Predict_Beam"
-                    beam.Attachment0 = attach1
-                    beam.Attachment1 = attach2
-                    beam.Width0 = 0.3
-                    beam.Width1 = 0.3
-                    beam.Transparency = NumberSequence.new(0)
-                    beam.Color = ColorSequence.new(getgenv().PredictAimColor)
-                    beam.Parent = Workspace
-                    
-                    predictLines["main"] = {attach1, attach2, beam}
-                end
+                local attach2 = Instance.new("Attachment")
+                attach2.Name = "Predict_Attach2"
+                attach2.Parent = ballPart
                 
-                local attach1, attach2, beam = unpack(predictLines["main"])
-                attach1.Position = Vector3.new(0,0,0)
-                attach2.Position = ballPart.CFrame:PointToObjectSpace(endPos)
+                local beam = Instance.new("Beam")
+                beam.Attachment0 = attach1
+                beam.Attachment1 = attach2
+                beam.Width0 = 0.4
+                beam.Width1 = 0.4
+                beam.Transparency = NumberSequence.new(0.2)
                 beam.Color = ColorSequence.new(getgenv().PredictAimColor)
-            else
-                if predictLines["main"] then
-                    for _, obj in ipairs(predictLines["main"]) do
-                        obj:Destroy()
-                    end
-                    predictLines["main"] = nil
+                beam.Parent = Workspace
+                
+                predictLines["main"] = {attach1, attach2, beam}
+            end
+            
+            local attach1, attach2, beam = unpack(predictLines["main"])
+            attach1.Position = Vector3.new(0,0,0)
+            attach2.Position = ballPart.CFrame:PointToObjectSpace(endPos)
+            beam.Color = ColorSequence.new(getgenv().PredictAimColor)
+        else
+            if predictLines["main"] then
+                for _, obj in ipairs(predictLines["main"]) do
+                    obj:Destroy()
                 end
+                predictLines["main"] = nil
             end
         end
     else
@@ -877,5 +923,6 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("ShinkaHub - Volleyball Legends (Funcionalidades Específicas) carregado!")
-print("Ajuste os nomes dos remotes conforme necessário.")
+-- Pequena notificação de carregamento
+print("✅ ShinkaHub - Volleyball Legends carregado com sucesso!")
+print("🎯 Funções: Ball Hitbox | Auto Strong Serve | Jump ESP | Predict Aim")
