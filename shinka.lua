@@ -1,5 +1,6 @@
 -- ===================================================================
--- SHINKAHUB - PARTE 1/3 (ESTRUTURA PRINCIPAL, BARRA DE TÍTULO E MINIMIZAR)
+-- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
+-- PARTE 1/3 - ESTRUTURA PRINCIPAL, BARRA DE TÍTULO E MINIMIZAR
 -- ===================================================================
 
 -- Serviços
@@ -8,37 +9,39 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
-local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
 
--- Variáveis Globais (getgenv) - Todas as funções do hub
-getgenv().AutoFarm = false
-getgenv().AutoQuest = false
-getgenv().AutoCollect = false
-getgenv().AutoVoid = false
+-- Variáveis Globais (getgenv) - Todas as funções do hub para Volleyball Legends
+getgenv().AutoSpike = false
 getgenv().AutoBlock = false
-getgenv().AntiSlow = false
-getgenv().SafeModeToggle = false
-getgenv().SafeModeHealth = 50
-getgenv().SafeModeBackHealth = 69
-getgenv().SelectedCharacter = "Bald"
-getgenv().AutoKill = false
-getgenv().AntiAfk = false
+getgenv().AutoServe = false
+getgenv().AutoDive = false
+getgenv().AutoJump = false
+getgenv().AutoFarm = false          -- Farm XP / Moedas
+getgenv().AutoWin = false            -- Tentar vencer automático (se houver exploit)
+getgenv().AntiStun = false
+getgenv().InfiniteStamina = false
+getgenv().AutoPowerup = false
+getgenv().TargetEnemy = false        -- Mira no adversário para spike
 getgenv().Walkspeed = 16
 getgenv().Jumppower = 50
-getgenv().AutoRaid = false
-getgenv().AutoDungeon = false
+getgenv().SpikePower = 100           -- Força do spike (se controlável)
+getgenv().SelectedTeam = "Auto"       -- Time: Auto, Red, Blue
+getgenv().AutoRespawn = false
+getgenv().NoCooldown = false
 
 local Player = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ShinkaHub_GUI"
+ScreenGui.Name = "ShinkaHub_VL"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Destroi GUI antiga se existir
 for _, v in ipairs(CoreGui:GetChildren()) do
-    if v.Name == "ShinkaHub_GUI" then
+    if v.Name == "ShinkaHub_VL" then
         v:Destroy()
     end
 end
@@ -79,8 +82,8 @@ end
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 650, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -325, 0.5, -225)
+mainFrame.Size = UDim2.new(0, 700, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
@@ -116,7 +119,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
 titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "ShinkaHub | Version: 3.7.0"
+titleLabel.Text = "ShinkaHub | Volleyball Legends"
 titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
@@ -171,10 +174,9 @@ mainContentContainer.BackgroundTransparency = 1
 mainContentContainer.Parent = mainFrame
 
 -- ========== SISTEMA DE MINIMIZAR ==========
--- Frame minimizado (aparece quando minimizado)
 local minimizedFrame = Instance.new("Frame")
 minimizedFrame.Name = "MinimizedFrame"
-minimizedFrame.Size = UDim2.new(0, 220, 0, 45)
+minimizedFrame.Size = UDim2.new(0, 250, 0, 45)
 minimizedFrame.Position = mainFrame.Position
 minimizedFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 minimizedFrame.Visible = false
@@ -187,7 +189,7 @@ local minimizedLabel = Instance.new("TextLabel")
 minimizedLabel.Size = UDim2.new(1, -45, 1, 0)
 minimizedLabel.Position = UDim2.new(0, 10, 0, 0)
 minimizedLabel.BackgroundTransparency = 1
-minimizedLabel.Text = "ShinkaHub"
+minimizedLabel.Text = "ShinkaHub - VL"
 minimizedLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 minimizedLabel.Font = Enum.Font.GothamBold
 minimizedLabel.TextSize = 16
@@ -282,13 +284,14 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 -- ========== FIM DA PARTE 1/3 ==========-- ===================================================================
--- SHINKAHUB - PARTE 2/3 (ABAS, PAINEL LATERAL, FUNÇÕES DE CRIAÇÃO DE UI)
+-- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
+-- PARTE 2/3 - ABAS, PAINEL LATERAL, FUNÇÕES DE CRIAÇÃO DE UI
 -- ===================================================================
 
 -- Painel de abas (ScrollingFrame vertical)
 local tabsPanel = Instance.new("ScrollingFrame")
 tabsPanel.Name = "TabsPanel"
-tabsPanel.Size = UDim2.new(0, 130, 1, -10)
+tabsPanel.Size = UDim2.new(0, 140, 1, -10)
 tabsPanel.Position = UDim2.new(0, 5, 0, 5)
 tabsPanel.BackgroundTransparency = 1
 tabsPanel.ScrollBarThickness = 4
@@ -303,23 +306,23 @@ tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Dados das abas
+-- Dados das abas (adaptado para Volleyball Legends)
 local tabsData = {
     {name = "Home", icon = "🏠", order = 1},
-    {name = "Main", icon = "⚙️", order = 2},
-    {name = "Farming", icon = "🌾", order = 3, highlightColor = Color3.fromRGB(200, 50, 50)},
-    {name = "Killer", icon = "⚔️", order = 4},
+    {name = "Match", icon = "🏐", order = 2, highlightColor = Color3.fromRGB(255, 140, 0)},
+    {name = "Player", icon = "⚡", order = 3},
+    {name = "Combat", icon = "⚔️", order = 4},
     {name = "Misc", icon = "🧰", order = 5},
 }
 
 local tabButtons = {}
-local selectedTab = "Farming" -- padrão
+local selectedTab = "Match" -- padrão
 
 -- Área de conteúdo
 local contentArea = Instance.new("Frame")
 contentArea.Name = "ContentArea"
-contentArea.Size = UDim2.new(1, -145, 1, -10)
-contentArea.Position = UDim2.new(0, 140, 0, 5)
+contentArea.Size = UDim2.new(1, -155, 1, -10)
+contentArea.Position = UDim2.new(0, 150, 0, 5)
 contentArea.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 contentArea.Parent = mainContentContainer
 createCorner(contentArea, 10)
@@ -342,7 +345,7 @@ end
 local function createTabButton(tab)
     local btn = Instance.new("TextButton")
     btn.Name = tab.name .. "Tab"
-    btn.Size = UDim2.new(1, -10, 0, 42)
+    btn.Size = UDim2.new(1, -10, 0, 45)
     btn.BackgroundColor3 = (tab.name == selectedTab) and (tab.highlightColor or Color3.fromRGB(60, 60, 100)) or Color3.fromRGB(35, 35, 50)
     btn.Text = tab.icon .. "   " .. tab.name
     btn.TextColor3 = Color3.fromRGB(240, 240, 255)
@@ -448,7 +451,8 @@ local function createToggle(parent, name, label, default)
 end
 
 -- Criar um Slider
-local function createSlider(parent, name, label, min, max, default, color)
+local function createSlider(parent, name, label, min, max, default, color, suffix)
+    suffix = suffix or ""
     local container = Instance.new("Frame")
     container.Name = name .. "SliderContainer"
     container.Size = UDim2.new(1, -10, 0, 50)
@@ -471,7 +475,7 @@ local function createSlider(parent, name, label, min, max, default, color)
     valueLabel.Size = UDim2.new(0.4, 0, 0.4, 0)
     valueLabel.Position = UDim2.new(0.6, 0, 0, 0)
     valueLabel.BackgroundTransparency = 1
-    valueLabel.Text = tostring(default)
+    valueLabel.Text = tostring(default) .. suffix
     valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     valueLabel.Font = Enum.Font.GothamBold
     valueLabel.TextSize = 13
@@ -513,7 +517,7 @@ local function createSlider(parent, name, label, min, max, default, color)
         value = math.floor(value + 0.5)
         fill.Size = UDim2.new(percent, 0, 1, 0)
         thumb.Position = UDim2.new(percent, -7, 0.5, -7)
-        valueLabel.Text = tostring(value)
+        valueLabel.Text = tostring(value) .. suffix
         getgenv()[name] = value
     end
 
@@ -669,10 +673,11 @@ local function createDropdown(parent, label, options, default, callback)
 end
 
 -- ========== FIM DA PARTE 2/3 ==========-- ===================================================================
--- SHINKAHUB - PARTE 3/3 (CONTEÚDO DAS ABAS E HEARTBEAT)
+-- SHINKAHUB - VOLLEYBALL LEGENDS EDITION
+-- PARTE 3/3 - CONTEÚDO DAS ABAS E HEARTBEAT (FUNÇÕES ATIVAS)
 -- ===================================================================
 
--- Layout automático para as páginas (UIListLayout)
+-- Layout automático para as páginas
 for name, page in pairs(pages) do
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 15)
@@ -688,218 +693,286 @@ local homePage = pages["Home"]
 -- Seção Auto
 local autoSection, autoContent = createSection(homePage, "Auto")
 autoSection.Size = UDim2.new(1, 0, 0, 130)
-createToggle(autoContent, "AutoFarm", "Auto Farm", false)
-createToggle(autoContent, "AutoQuest", "Auto Quest", false)
-createToggle(autoContent, "AutoCollect", "Auto Collect", false)
+createToggle(autoContent, "AutoFarm", "Auto Farm XP", false)
+createToggle(autoContent, "AutoWin", "Auto Win (Experimental)", false)
+createToggle(autoContent, "AutoRespawn", "Auto Respawn", false)
 
--- Seção Player Boost
-local boostSection, boostContent = createSection(homePage, "Player Boost")
-boostSection.Size = UDim2.new(1, 0, 0, 120)
-createSlider(boostContent, "Walkspeed", "Walkspeed", 16, 120, 16, Color3.fromRGB(0, 150, 200))
-createSlider(boostContent, "Jumppower", "Jump Power", 50, 200, 50, Color3.fromRGB(0, 150, 200))
+-- Seção Info
+local infoSection, infoContent = createSection(homePage, "Info")
+infoSection.Size = UDim2.new(1, 0, 0, 80)
+createButton(infoContent, "Rejoin Server", function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+end)
+createButton(infoContent, "Server Hop", function()
+    -- Tenta encontrar um novo servidor (simplificado)
+    local HttpService = game:GetService("HttpService")
+    local servers = {}
+    -- ... lógica de server hop (pode ser complexa, deixamos simples)
+    print("Server Hop não implementado, use Rejoin.")
+end)
 
--- ========== ABA MAIN ==========
-local mainPage = pages["Main"]
+-- ========== ABA MATCH (Principal do jogo) ==========
+local matchPage = pages["Match"]
 
--- Seção Teleport
-local teleportSection, teleportContent = createSection(mainPage, "Teleport")
-teleportSection.Size = UDim2.new(1, 0, 0, 130)
+-- Seção Ações de Jogo
+local actionsSection, actionsContent = createSection(matchPage, "Match Actions")
+actionsSection.Size = UDim2.new(1, 0, 0, 220)
 
--- Exemplo de botões de teleporte (personalize conforme o jogo)
-createButton(teleportContent, "Teleport to Spawn", function()
-    local spawn = Workspace:FindFirstChild("Spawn") or Workspace:FindFirstChild("Start")
-    if spawn then
-        Player.Character:MoveTo(spawn.Position)
+createToggle(actionsContent, "AutoSpike", "Auto Spike", false)
+createToggle(actionsContent, "AutoBlock", "Auto Block", false)
+createToggle(actionsContent, "AutoServe", "Auto Serve", false)
+createToggle(actionsContent, "AutoDive", "Auto Dive", false)
+createToggle(actionsContent, "AutoJump", "Auto Jump", false)
+createToggle(actionsContent, "TargetEnemy", "Target Enemy (Aim)", false)
+
+-- Seção Configurações de Jogo
+local gameConfigSection, gameConfigContent = createSection(matchPage, "Game Config")
+gameConfigSection.Size = UDim2.new(1, 0, 0, 130)
+
+createDropdown(gameConfigContent, "Team", {"Auto", "Red", "Blue"}, "Auto", function(team)
+    getgenv().SelectedTeam = team
+end)
+
+createSlider(gameConfigContent, "SpikePower", "Spike Power", 50, 200, 100, Color3.fromRGB(255, 100, 0), "%")
+createToggle(gameConfigContent, "NoCooldown", "No Cooldown", false)
+
+-- ========== ABA PLAYER ==========
+local playerPage = pages["Player"]
+
+-- Seção Atributos
+local attrSection, attrContent = createSection(playerPage, "Attributes")
+attrSection.Size = UDim2.new(1, 0, 0, 150)
+
+createSlider(attrContent, "Walkspeed", "Walkspeed", 16, 120, 16, Color3.fromRGB(0, 150, 200))
+createSlider(attrContent, "Jumppower", "Jump Power", 50, 200, 50, Color3.fromRGB(0, 150, 200))
+createToggle(attrContent, "InfiniteStamina", "Infinite Stamina", false)
+createToggle(attrContent, "AntiStun", "Anti Stun", false)
+
+-- Seção Visual
+local visualSection, visualContent = createSection(playerPage, "Visual")
+visualSection.Size = UDim2.new(1, 0, 0, 80)
+createToggle(visualContent, "ESP", "ESP Players", false)
+createToggle(visualContent, "Fullbright", "Fullbright", false)
+
+-- ========== ABA COMBAT ==========
+local combatPage = pages["Combat"]
+
+local combatSection, combatContent = createSection(combatPage, "Combat Options")
+combatSection.Size = UDim2.new(1, 0, 0, 150)
+
+createToggle(combatContent, "AutoPowerup", "Auto Power-up", false)
+createToggle(combatContent, "AutoSpike", "Auto Spike (Combat)", false) -- pode duplicar, mas é separado
+createToggle(combatContent, "AutoBlock", "Auto Block (Combat)", false)
+createButton(combatContent, "Reset Character", function()
+    if Player.Character then
+        Player.Character:BreakJoints()
     end
 end)
-
-createButton(teleportContent, "Teleport to Boss", function()
-    local boss = Workspace:FindFirstChild("Boss") or Workspace:FindFirstChild("BossArea")
-    if boss then
-        Player.Character:MoveTo(boss.Position)
-    end
-end)
-
--- Seção Misc
-local miscSection, miscContent = createSection(mainPage, "Misc")
-miscSection.Size = UDim2.new(1, 0, 0, 90)
-createToggle(miscContent, "AntiAfk", "Anti-AFK", false)
-createButton(miscContent, "Rejoin Game", function()
-    TeleportService:Teleport(game.PlaceId, Player)
-end)
-
--- ========== ABA FARMING (mais completa) ==========
-local farmingPage = pages["Farming"]
-
--- Seção Player
-local playerSection, playerContent = createSection(farmingPage, "Player")
-playerSection.Size = UDim2.new(1, 0, 0, 130)
-createToggle(playerContent, "AutoVoid", "Auto Void", false)
-createToggle(playerContent, "AutoBlock", "Auto Block", false)
-createToggle(playerContent, "AntiSlow", "Anti-Slow", false)
-
--- Seção Character
-local charSection, charContent = createSection(farmingPage, "Character")
-charSection.Size = UDim2.new(1, 0, 0, 90)
-
--- Dropdown de personagem
-createDropdown(charContent, "Choose Character", {"Bald", "Hair", "Mask", "Cyborg"}, "Bald", function(selected)
-    getgenv().SelectedCharacter = selected
-end)
-
-createButton(charContent, "Equip Character", function()
-    print("Equipando: " .. getgenv().SelectedCharacter)
-    -- Coloque aqui a lógica de equipar o personagem no jogo
-end)
-
--- Seção Safe Mode
-local safeSection, safeContent = createSection(farmingPage, "Safe Mode")
-safeSection.Size = UDim2.new(1, 0, 0, 150)
-createToggle(safeContent, "SafeModeToggle", "Auto Safe Mode", false)
-createSlider(safeContent, "SafeModeHealth", "Health Threshold", 1, 100, 50, Color3.fromRGB(200, 50, 50))
-createSlider(safeContent, "SafeModeBackHealth", "Return Health", 1, 100, 69, Color3.fromRGB(200, 50, 50))
-
--- ========== ABA KILLER ==========
-local killerPage = pages["Killer"]
-
-local killerSection, killerContent = createSection(killerPage, "Combat")
-killerSection.Size = UDim2.new(1, 0, 0, 90)
-createToggle(killerContent, "AutoKill", "Auto Kill", false)
-createToggle(killerContent, "AutoRaid", "Auto Raid", false)
-createToggle(killerContent, "AutoDungeon", "Auto Dungeon", false)
-
-local aimSection, aimContent = createSection(killerPage, "Aimbot")
-aimSection.Size = UDim2.new(1, 0, 0, 80)
-createToggle(aimContent, "Aimbot", "Aimbot", false)
-createSlider(aimContent, "AimSensitivity", "Sensitivity", 1, 10, 5, Color3.fromRGB(200, 100, 0))
 
 -- ========== ABA MISC ==========
 local miscPage = pages["Misc"]
 
-local visualSection, visualContent = createSection(miscPage, "Visuals")
-visualSection.Size = UDim2.new(1, 0, 0, 80)
-createToggle(visualContent, "ESP", "ESP", false)
-createToggle(visualContent, "Fullbright", "Fullbright", false)
+local miscSection, miscContent = createSection(miscPage, "Extras")
+miscSection.Size = UDim2.new(1, 0, 0, 120)
+createToggle(miscContent, "AntiAfk", "Anti-AFK", false)
+createToggle(miscContent, "NoClip", "NoClip (Experimental)", false)
+createToggle(miscContent, "InfiniteJump", "Infinite Jump", false)
 
-local worldSection, worldContent = createSection(miscPage, "World")
-worldSection.Size = UDim2.new(1, 0, 0, 80)
-createToggle(worldContent, "NoClip", "NoClip", false)
-createToggle(worldContent, "InfiniteJump", "Infinite Jump", false)
-
--- ========== HEARTBEAT LOOP (TODAS AS FUNÇÕES ATIVAS) ==========
+-- ========== HEARTBEAT LOOP - LÓGICA ATIVA PARA VOLLEYBALL LEGENDS ==========
 RunService.Heartbeat:Connect(function()
-    -- Auto Farm (exemplo)
-    if getgenv().AutoFarm then
-        -- Lógica de farm: procurar mobs, coletar, etc.
-        -- (adaptar para o jogo específico)
+    -- Garantir que o personagem existe
+    local character = Player.Character
+    local humanoid = character and character:FindFirstChild("Humanoid")
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not character or not humanoid or not rootPart then return end
+
+    -- ===== FUNÇÕES DE MOVIMENTAÇÃO E ATRIBUTOS =====
+    if getgenv().Walkspeed then
+        humanoid.WalkSpeed = getgenv().Walkspeed
+    end
+    if getgenv().Jumppower then
+        humanoid.JumpPower = getgenv().Jumppower
     end
 
-    -- Auto Quest
-    if getgenv().AutoQuest then
-        -- Lógica de quest
+    -- ===== INFINITE STAMINA =====
+    if getgenv().InfiniteStamina then
+        -- Exemplo: Stamina pode ser um NumberValue no personagem ou um atributo
+        local stamina = character:FindFirstChild("Stamina") or character:FindFirstChild("Energy")
+        if stamina and stamina:IsA("NumberValue") then
+            stamina.Value = stamina.MaxValue or 100
+        end
     end
 
-    -- Auto Collect
-    if getgenv().AutoCollect then
-        -- Coletar itens próximos
-    end
-
-    -- Auto Void
-    if getgenv().AutoVoid then
-        -- Prevenir queda no vazio
-        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-            local pos = Player.Character.HumanoidRootPart.Position
-            if pos.Y < -50 then
-                Player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 50, 0) -- teleporte para safe
+    -- ===== AUTO SERVE =====
+    if getgenv().AutoServe then
+        -- Verificar se está no momento de sacar (por exemplo, se há uma bola na mão)
+        -- Isso varia de jogo para jogo. Exemplo genérico:
+        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
+        if ball and ball:FindFirstChild("Handle") then
+            -- Se a bola está perto e o jogador pode sacar
+            local serveremote = ReplicatedStorage:FindFirstChild("Serve") or ReplicatedStorage:FindFirstChild("RemoteEvent")
+            if serveremote then
+                serveremote:FireServer()
             end
         end
     end
 
-    -- Auto Block (exemplo: segurar botão de bloqueio)
+    -- ===== AUTO SPIKE =====
+    if getgenv().AutoSpike then
+        -- Verifica se a bola está no ar e próximo para atacar
+        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
+        if ball and ball:FindFirstChild("Handle") then
+            local ballPos = ball.Handle.Position
+            local charPos = rootPart.Position
+            local distance = (ballPos - charPos).Magnitude
+            if distance < 15 and ballPos.Y > charPos.Y + 5 then -- Bola acima
+                local spikeremote = ReplicatedStorage:FindFirstChild("Spike") or ReplicatedStorage:FindFirstChild("Attack")
+                if spikeremote then
+                    spikeremote:FireServer()
+                end
+            end
+        end
+    end
+
+    -- ===== AUTO BLOCK =====
     if getgenv().AutoBlock then
-        -- Simular tecla de bloqueio (depende do jogo)
-    end
-
-    -- Anti-Slow (resetar velocidade)
-    if getgenv().AntiSlow and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        if Player.Character.Humanoid.WalkSpeed < 16 then
-            Player.Character.Humanoid.WalkSpeed = 16
+        -- Se a bola está vindo em direção ao jogador, bloquear
+        local ball = Workspace:FindFirstChild("Ball") or Workspace:FindFirstChild("Volleyball")
+        if ball and ball:FindFirstChild("Handle") then
+            -- Lógica simples: se a bola está se movendo na direção do jogador
+            -- (requer análise de velocidade, deixamos simplificado)
+            local blockemote = ReplicatedStorage:FindFirstChild("Block") or ReplicatedStorage:FindFirstChild("Defense")
+            if blockemote then
+                blockemote:FireServer()
+            end
         end
     end
 
-    -- Safe Mode
-    if getgenv().SafeModeToggle and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        local health = Player.Character.Humanoid.Health
-        if health <= getgenv().SafeModeHealth then
-            -- Ativar modo seguro: teleportar para safe area, ativar auto potion, etc.
-        elseif health >= getgenv().SafeModeBackHealth then
-            -- Desativar modo seguro
+    -- ===== AUTO DIVE =====
+    if getgenv().AutoDive then
+        -- Mergulhar para pegar bola longe
+        local ball = Workspace:FindFirstChild("Ball")
+        if ball and ball:FindFirstChild("Handle") then
+            local ballPos = ball.Handle.Position
+            local charPos = rootPart.Position
+            if (ballPos - charPos).Magnitude > 20 then
+                local diveemote = ReplicatedStorage:FindFirstChild("Dive") or ReplicatedStorage:FindFirstChild("Slide")
+                if diveemote then
+                    diveemote:FireServer()
+                end
+            end
         end
     end
 
-    -- Auto Kill (exemplo: atacar inimigos próximos)
-    if getgenv().AutoKill then
-        -- Lógica de combate
+    -- ===== AUTO JUMP =====
+    if getgenv().AutoJump then
+        -- Pular quando a bola estiver próxima (para spike/block)
+        local ball = Workspace:FindFirstChild("Ball")
+        if ball and ball:FindFirstChild("Handle") then
+            local ballPos = ball.Handle.Position
+            local charPos = rootPart.Position
+            if (ballPos - charPos).Magnitude < 10 and ballPos.Y > charPos.Y then
+                humanoid.Jump = true
+            end
+        end
     end
 
-    -- Anti-AFK
+    -- ===== TARGET ENEMY =====
+    if getgenv().TargetEnemy then
+        -- Virar o personagem para o adversário (pode ser útil para mirar)
+        local enemy = nil
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                enemy = player
+                break
+            end
+        end
+        if enemy and enemy.Character and enemy.Character:FindFirstChild("HumanoidRootPart") then
+            local enemyPos = enemy.Character.HumanoidRootPart.Position
+            local lookAt = CFrame.lookAt(rootPart.Position, enemyPos)
+            rootPart.CFrame = CFrame.new(rootPart.Position, Vector3.new(enemyPos.X, rootPart.Position.Y, enemyPos.Z))
+        end
+    end
+
+    -- ===== ANTI STUN =====
+    if getgenv().AntiStun then
+        -- Se o jogador está atordoado, tentar resetar
+        if humanoid:GetState() == Enum.HumanoidStateType.Stunned then
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end
+
+    -- ===== AUTO POWER-UP =====
+    if getgenv().AutoPowerup then
+        -- Procurar power-ups no mapa e pegar
+        for _, obj in ipairs(Workspace:GetChildren()) do
+            if obj.Name:lower():find("power") or obj.Name:lower():find("boost") then
+                if obj:IsA("Part") or obj:IsA("Model") then
+                    local pos = obj:IsA("Model") and obj.PrimaryPart and obj.PrimaryPart.Position or obj.Position
+                    rootPart.CFrame = CFrame.new(pos)
+                end
+            end
+        end
+    end
+
+    -- ===== AUTO FARM (ganhar XP) =====
+    if getgenv().AutoFarm then
+        -- Pode ser farmar power-ups, ou simplesmente ficar em uma posição que rende XP
+        -- Exemplo: mover-se para um local específico
+        local farmPos = Vector3.new(0, 20, 0) -- local fictício
+        rootPart.CFrame = CFrame.new(farmPos)
+    end
+
+    -- ===== ANTI-AFK =====
     if getgenv().AntiAfk then
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
     end
 
-    -- Walkspeed / Jumppower (aplicar se mudar)
-    if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        if Player.Character.Humanoid.WalkSpeed ~= getgenv().Walkspeed then
-            Player.Character.Humanoid.WalkSpeed = getgenv().Walkspeed
-        end
-        if Player.Character.Humanoid.JumpPower ~= getgenv().Jumppower then
-            Player.Character.Humanoid.JumpPower = getgenv().Jumppower
-        end
+    -- ===== NO COOLDOWN =====
+    if getgenv().NoCooldown then
+        -- Tentar zerar cooldowns (pode ser via remotes)
+        -- Exemplo genérico: procurar valores de cooldown e setar para 0
     end
 
-    -- Aimbot (placeholder)
-    if getgenv().Aimbot then
-        -- Lógica de aimbot
-    end
-
-    -- ESP (placeholder)
+    -- ===== ESP =====
     if getgenv().ESP then
-        -- Desenhar ESP
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                -- Desenhar ESP simples (aqui apenas um highlight, mas pode ser mais elaborado)
+                -- Para simplificar, não implementaremos desenho 2D agora.
+            end
+        end
     end
 
-    -- Fullbright
+    -- ===== FULLBRIGHT =====
     if getgenv().Fullbright then
-        game:GetService("Lighting").Brightness = 2
-        game:GetService("Lighting").Ambient = Color3.new(1, 1, 1)
+        Lighting.Brightness = 2
+        Lighting.Ambient = Color3.new(1, 1, 1)
     else
-        game:GetService("Lighting").Brightness = 1
-        game:GetService("Lighting").Ambient = Color3.new(0, 0, 0)
+        Lighting.Brightness = 1
+        Lighting.Ambient = Color3.new(0, 0, 0)
     end
 
-    -- NoClip (exemplo)
-    if getgenv().NoClip and Player.Character then
-        for _, part in ipairs(Player.Character:GetChildren()) do
+    -- ===== NOCLIP =====
+    if getgenv().NoClip then
+        for _, part in ipairs(character:GetChildren()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
     end
 
-    -- Infinite Jump
-    if getgenv().InfiniteJump then
-        -- Implementar via UserInputService (exemplo simples)
-        -- Pode ser feito com bind, mas aqui apenas indicamos que está ativo.
-    end
+    -- ===== INFINITE JUMP =====
+    -- (Já tratado pelo evento abaixo)
 end)
 
 -- Infinite Jump (detecção de tecla)
-local infiniteJumpConnection
 UserInputService.JumpRequest:Connect(function()
     if getgenv().InfiniteJump and Player.Character and Player.Character:FindFirstChild("Humanoid") then
         Player.Character.Humanoid:ChangeState("Jumping")
     end
 end)
 
-print("ShinkaHub v3.7.0 carregado com sucesso! Divirta-se.")
+print("ShinkaHub - Volleyball Legends carregado! Divirta-se.")
 -- ========== FIM DA PARTE 3/3 ==========
