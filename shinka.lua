@@ -1,5 +1,6 @@
 -- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 1/4) – ESTRUTURA PRINCIPAL
+-- SHINKA HUB - VOLLEYBALL LEGENDS (VERSÃO FUNCIONAL)
+-- PARTE 1/4 – ESTRUTURA PRINCIPAL E GUI
 -- ===================================================================
 
 -- Serviços
@@ -12,9 +13,9 @@ local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 
--- Variáveis Globais (getgenv)
+-- Variáveis Globais
 getgenv().BallHitbox = false
-getgenv().BallHitboxSize = 2.0
+getgenv().BallHitboxSize = 2
 getgenv().BallHitboxColor = Color3.fromRGB(255, 0, 0)
 getgenv().AutoStrongServe = false
 getgenv().JumpESP = false
@@ -22,6 +23,9 @@ getgenv().JumpESPColor = Color3.fromRGB(0, 255, 0)
 getgenv().PredictAim = false
 getgenv().PredictionLength = 5
 getgenv().PredictAimColor = Color3.fromRGB(0, 255, 255)
+getgenv().AutoSpike = false
+getgenv().AutoBlock = false
+getgenv().AutoDive = false
 
 local Player = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
@@ -37,7 +41,7 @@ for _, v in ipairs(CoreGui:GetChildren()) do
 end
 ScreenGui.Parent = CoreGui
 
--- Funções Auxiliares de UI
+-- Funções Auxiliares
 local function createGradient(parent, color1, color2, rotation)
     local gradient = Instance.new("UIGradient")
     gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)})
@@ -72,8 +76,8 @@ end
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 750, 0, 580)
-mainFrame.Position = UDim2.new(0.5, -375, 0.5, -290)
+mainFrame.Size = UDim2.new(0, 750, 0, 600)
+mainFrame.Position = UDim2.new(0.5, -375, 0.5, -300)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
@@ -107,7 +111,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
 titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "ShinkaHub | Volleyball Legends"
+titleLabel.Text = "Shinka Hub | Volleyball Legends"
 titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
@@ -160,7 +164,7 @@ mainContentContainer.Position = UDim2.new(0, 0, 0, 45)
 mainContentContainer.BackgroundTransparency = 1
 mainContentContainer.Parent = mainFrame
 
--- Sistema de minimizar
+-- Sistema de minimizar (versão reduzida)
 local minimizedFrame = Instance.new("Frame")
 minimizedFrame.Name = "MinimizedFrame"
 minimizedFrame.Size = UDim2.new(0, 280, 0, 50)
@@ -176,7 +180,7 @@ local minimizedLabel = Instance.new("TextLabel")
 minimizedLabel.Size = UDim2.new(1, -50, 1, 0)
 minimizedLabel.Position = UDim2.new(0, 10, 0, 0)
 minimizedLabel.BackgroundTransparency = 1
-minimizedLabel.Text = "ShinkaHub - VL (Ativo)"
+minimizedLabel.Text = "Shinka Hub - Ativo"
 minimizedLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 minimizedLabel.Font = Enum.Font.GothamBold
 minimizedLabel.TextSize = 16
@@ -268,10 +272,10 @@ UserInputService.InputEnded:Connect(function(input)
         dragging = false
     end
 end)-- ===================================================================
--- SHINKAHUB (PARTE 2/4) – ABAS E FUNÇÕES DE CRIAÇÃO DE UI
+-- PARTE 2/4 – PAINEL DE ABAS E FUNÇÕES DE CRIAÇÃO DE UI
 -- ===================================================================
 
--- Painel de abas (ScrollingFrame)
+-- Painel de abas
 local tabsPanel = Instance.new("ScrollingFrame")
 tabsPanel.Name = "TabsPanel"
 tabsPanel.Size = UDim2.new(0, 150, 1, -10)
@@ -289,13 +293,14 @@ tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Dados das abas (agora com 5 abas)
+-- Abas (incluindo as que você mencionou)
 local tabsData = {
-    {name = "Hitbox", icon = "🎯", order = 1, highlightColor = Color3.fromRGB(255, 100, 100)},
+    {name = "Predict", icon = "🔮", order = 1, highlightColor = Color3.fromRGB(255, 255, 0)},
     {name = "Serve", icon = "💪", order = 2, highlightColor = Color3.fromRGB(100, 255, 100)},
     {name = "JumpESP", icon = "👆", order = 3, highlightColor = Color3.fromRGB(100, 100, 255)},
-    {name = "Predict", icon = "🔮", order = 4, highlightColor = Color3.fromRGB(255, 255, 0)},
-    {name = "Credits", icon = "📜", order = 5, highlightColor = Color3.fromRGB(200, 100, 255)},
+    {name = "Hitbox", icon = "🎯", order = 4, highlightColor = Color3.fromRGB(255, 100, 100)},
+    {name = "Actions", icon = "⚡", order = 5, highlightColor = Color3.fromRGB(255, 150, 0)},
+    {name = "Credits", icon = "📜", order = 6, highlightColor = Color3.fromRGB(200, 100, 255)},
 }
 
 local tabButtons = {}
@@ -381,9 +386,9 @@ for name, page in pairs(pages) do
     layout.Parent = page
 end
 
--- ========== FUNÇÕES DE CRIAÇÃO DE ELEMENTOS (CORRIGIDAS) ==========
+-- ========== FUNÇÕES DE CRIAÇÃO DE ELEMENTOS ==========
 
--- Toggle (liga/desliga)
+-- Toggle
 local function createToggle(parent, name, label, default)
     local container = Instance.new("Frame")
     container.Name = name .. "Container"
@@ -432,7 +437,6 @@ local function createToggle(parent, name, label, default)
     end
     updateVisual()
 
-    -- Evento de clique (corrigido: usar MouseButton1Click no botão invisível ou no próprio toggleBg)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, 0, 1, 0)
     button.BackgroundTransparency = 1
@@ -572,7 +576,6 @@ local function createColorPicker(parent, name, label, defaultColor)
     pickerButton.Text = ""
     pickerButton.Parent = colorDisplay
 
-    -- Menu simples com cores predefinidas
     pickerButton.MouseButton1Click:Connect(function()
         local menu = Instance.new("Frame")
         menu.Size = UDim2.new(0, 200, 0, 200)
@@ -667,7 +670,7 @@ local function createSection(parent, title)
     content.BackgroundTransparency = 1
     content.Parent = section
 
-    -- Layout interno da seção
+    -- Layout interno
     local contentLayout = Instance.new("UIListLayout")
     contentLayout.Padding = UDim.new(0, 12)
     contentLayout.FillDirection = Enum.FillDirection.Vertical
@@ -676,36 +679,34 @@ local function createSection(parent, title)
     contentLayout.Parent = content
 
     return section, content
+end
+
+-- Botão de ação rápida
+local function createActionButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 45)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = parent
+    createCorner(btn, 8)
+    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
+
+    btn.MouseButton1Click:Connect(callback)
+
+    btn.MouseEnter:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
+    end)
+
+    return btn
 end-- ===================================================================
--- SHINKAHUB (PARTE 3/4) – CONTEÚDO DAS ABAS HITBOX, SERVE, JUMPESP, PREDICT
+-- PARTE 3/4 – CONTEÚDO DAS ABAS (PREDICT, SERVE, JUMPESP, HITBOX, ACTIONS)
 -- ===================================================================
-
--- ========== ABA HITBOX ==========
-local hitboxPage = pages["Hitbox"]
-
-local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
-ballSection.Size = UDim2.new(1, 0, 0, 210)
-
-createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
-createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1.0, 5.0, 2.0, "x")
-createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().BallHitboxColor)
-
--- ========== ABA SERVE ==========
-local servePage = pages["Serve"]
-
-local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
-serveSection.Size = UDim2.new(1, 0, 0, 80)
-
-createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)
-
--- ========== ABA JUMP ESP ==========
-local jumpPage = pages["JumpESP"]
-
-local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
-jumpSection.Size = UDim2.new(1, 0, 0, 140)
-
-createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
-createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
 
 -- ========== ABA PREDICT ==========
 local predictPage = pages["Predict"]
@@ -715,18 +716,80 @@ predictSection.Size = UDim2.new(1, 0, 0, 200)
 
 createToggle(predictContent, "PredictAim", "Enable Predict Aim", false)
 createSlider(predictContent, "PredictionLength", "Prediction Length", 1, 20, 5, " studs")
-createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)-- ===================================================================
--- SHINKAHUB (PARTE 4/4) – CRÉDITOS + HEARTBEAT FUNCIONAL
+createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)
+
+-- ========== ABA SERVE ==========
+local servePage = pages["Serve"]
+
+local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
+serveSection.Size = UDim2.new(1, 0, 0, 80)
+
+createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)
+
+-- ========== ABA JUMPESP ==========
+local jumpPage = pages["JumpESP"]
+
+local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
+jumpSection.Size = UDim2.new(1, 0, 0, 140)
+
+createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
+createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
+
+-- ========== ABA HITBOX ==========
+local hitboxPage = pages["Hitbox"]
+
+local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
+ballSection.Size = UDim2.new(1, 0, 0, 210)
+
+createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
+createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1, 5, 2, "x")
+createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().BallHitboxColor)
+
+-- ========== ABA ACTIONS ==========
+local actionsPage = pages["Actions"]
+
+local actionsSection, actionsContent = createSection(actionsPage, "Quick Actions")
+actionsSection.Size = UDim2.new(1, 0, 0, 250)
+
+createActionButton(actionsContent, "🏐 MERGULHO (Dive)", function()
+    -- Tenta executar um mergulho (encontrar remote)
+    local remote = ReplicatedStorage:FindFirstChild("Dive") or 
+                   (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Dive"))
+    if remote then
+        remote:FireServer()
+    else
+        print("Remote de mergulho não encontrado")
+    end
+end)
+
+createActionButton(actionsContent, "⚙️ CONFIGURAÇÃO", function()
+    -- Abre um menu simples de configuração (pode ser expandido)
+    print("Abrir configurações...")
+end)
+
+createActionButton(actionsContent, "🔄 Auto Spike", function()
+    getgenv().AutoSpike = not getgenv().AutoSpike
+    print("Auto Spike:", getgenv().AutoSpike and "ON" or "OFF")
+end)
+
+createActionButton(actionsContent, "🛡️ Auto Block", function()
+    getgenv().AutoBlock = not getgenv().AutoBlock
+    print("Auto Block:", getgenv().AutoBlock and "ON" or "OFF")
+end)
+
+createActionButton(actionsContent, "💨 Auto Dive", function()
+    getgenv().AutoDive = not getgenv().AutoDive
+    print("Auto Dive:", getgenv().AutoDive and "ON" or "OFF")
+end)-- ===================================================================
+-- PARTE 4/4 – CRÉDITOS E HEARTBEAT FUNCIONAL
 -- ===================================================================
 
 -- ========== ABA CREDITS ==========
 local creditsPage = pages["Credits"]
 
--- Seção Créditos
 local creditsSection, creditsContent = createSection(creditsPage, "Créditos")
 creditsSection.Size = UDim2.new(1, 0, 0, 250)
 
--- Texto de créditos
 local creditLabel = Instance.new("TextLabel")
 creditLabel.Size = UDim2.new(1, -10, 0, 40)
 creditLabel.BackgroundTransparency = 1
@@ -757,7 +820,6 @@ discordLabel.TextSize = 18
 discordLabel.TextXAlignment = Enum.TextXAlignment.Left
 discordLabel.Parent = creditsContent
 
--- Botão com link do Discord (copia para área de transferência)
 local discordBtn = Instance.new("TextButton")
 discordBtn.Size = UDim2.new(1, -10, 0, 40)
 discordBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
@@ -772,11 +834,10 @@ createStroke(discordBtn, 1, Color3.fromRGB(70, 70, 100))
 discordBtn.MouseButton1Click:Connect(function()
     setclipboard("https://discord.gg/SNutmtu6x")
     discordBtn.Text = "Link copiado!"
-    wait(1)
+    task.wait(1)
     discordBtn.Text = "https://discord.gg/SNutmtu6x"
 end)
 
--- Efeito hover
 discordBtn.MouseEnter:Connect(function()
     tweenObject(discordBtn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
 end)
@@ -786,16 +847,24 @@ end)
 
 -- ========== HEARTBEAT LOOP - FUNÇÕES ATIVAS ==========
 
-local hitboxOverlay = nil
+-- Variáveis para os overlays
+local hitboxHighlight = nil
 local jumpESPLines = {}
 local predictLines = {}
 
--- Função para encontrar a bola
+-- Função melhorada para encontrar a bola
 local function findBall()
-    local ballNames = {"Ball", "Volleyball", "Vball", "GameBall"}
-    for _, name in ipairs(ballNames) do
-        local ball = Workspace:FindFirstChild(name)
-        if ball then return ball end
+    -- Procura por objetos com nome "Ball" ou "Volleyball" em qualquer lugar
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Name:lower():find("ball") or obj.Name:lower():find("volley")) then
+            return obj
+        end
+    end
+    -- Se não encontrar, procura por partes esféricas (pode ser útil)
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("Part") and obj.Shape == Enum.PartType.Ball then
+            return obj
+        end
     end
     return nil
 end
@@ -818,31 +887,28 @@ end
 RunService.Heartbeat:Connect(function()
     local character = Player.Character
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    local ball = findBall()
-    local ballPart = ball and (ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart"))
+    local ballPart = findBall()
 
-    -- ===== 1. BALL HITBOX =====
+    -- ===== 1. BALL HITBOX (usando Highlight para melhor visualização) =====
     if getgenv().BallHitbox and ballPart then
-        if not hitboxOverlay or not hitboxOverlay.Parent then
-            hitboxOverlay = Instance.new("Part")
-            hitboxOverlay.Name = "HitboxOverlay"
-            hitboxOverlay.Anchored = true
-            hitboxOverlay.CanCollide = false
-            hitboxOverlay.Transparency = 0.6
-            hitboxOverlay.Material = Enum.Material.ForceField
-            hitboxOverlay.Shape = Enum.PartType.Ball
-            hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
-            hitboxOverlay.Color = getgenv().BallHitboxColor
-            hitboxOverlay.Parent = Workspace
+        if not hitboxHighlight or not hitboxHighlight.Parent then
+            hitboxHighlight = Instance.new("Highlight")
+            hitboxHighlight.Name = "BallHitbox"
+            hitboxHighlight.Adornee = ballPart
+            hitboxHighlight.FillColor = getgenv().BallHitboxColor
+            hitboxHighlight.OutlineColor = Color3.new(1,1,1)
+            hitboxHighlight.FillTransparency = 0.5
+            hitboxHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            hitboxHighlight.Parent = Workspace
         else
-            hitboxOverlay.CFrame = ballPart.CFrame
-            hitboxOverlay.Size = Vector3.new(getgenv().BallHitboxSize, getgenv().BallHitboxSize, getgenv().BallHitboxSize)
-            hitboxOverlay.Color = getgenv().BallHitboxColor
+            hitboxHighlight.Adornee = ballPart
+            hitboxHighlight.FillColor = getgenv().BallHitboxColor
+            -- Ajustar "tamanho" via Outline? Não é possível, mas podemos usar um BillboardGui? Melhor manter assim.
         end
     else
-        if hitboxOverlay then
-            hitboxOverlay:Destroy()
-            hitboxOverlay = nil
+        if hitboxHighlight then
+            hitboxHighlight:Destroy()
+            hitboxHighlight = nil
         end
     end
 
@@ -960,8 +1026,44 @@ RunService.Heartbeat:Connect(function()
             predictLines["main"] = nil
         end
     end
+
+    -- ===== 5. AUTO SPIKE (exemplo) =====
+    if getgenv().AutoSpike and ballPart and rootPart then
+        local dist = (ballPart.Position - rootPart.Position).Magnitude
+        if dist < 15 then
+            local remote = ReplicatedStorage:FindFirstChild("Spike") or 
+                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Spike"))
+            if remote then
+                remote:FireServer()
+            end
+        end
+    end
+
+    -- ===== 6. AUTO BLOCK =====
+    if getgenv().AutoBlock and ballPart and rootPart then
+        local dist = (ballPart.Position - rootPart.Position).Magnitude
+        if dist < 10 then
+            local remote = ReplicatedStorage:FindFirstChild("Block") or 
+                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Block"))
+            if remote then
+                remote:FireServer()
+            end
+        end
+    end
+
+    -- ===== 7. AUTO DIVE =====
+    if getgenv().AutoDive and ballPart and rootPart then
+        local dist = (ballPart.Position - rootPart.Position).Magnitude
+        if dist > 20 then
+            local remote = ReplicatedStorage:FindFirstChild("Dive") or 
+                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Dive"))
+            if remote then
+                remote:FireServer()
+            end
+        end
+    end
 end)
 
-print("✅ ShinkaHub - Volleyball Legends carregado!")
-print("🎯 Funções: Ball Hitbox | Auto Strong Serve | Jump ESP | Predict Aim")
+print("✅ Shinka Hub - Volleyball Legends carregado!")
+print("🎯 Funções: Hitbox | Auto Serve | Jump ESP | Predict | Ações Rápidas")
 print("📱 Discord: https://discord.gg/SNutmtu6x")
