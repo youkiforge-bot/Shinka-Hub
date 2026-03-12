@@ -1,6 +1,5 @@
 -- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 1/4)
--- ESTRUTURA PRINCIPAL, GUI E SISTEMA DE MINIMIZAR
+-- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 1/4) – ESTRUTURA PRINCIPAL
 -- ===================================================================
 
 -- Serviços
@@ -9,12 +8,11 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
-local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 
--- Variáveis Globais
+-- Variáveis Globais (getgenv)
 getgenv().BallHitbox = false
 getgenv().BallHitboxSize = 2.0
 getgenv().BallHitboxColor = Color3.fromRGB(255, 0, 0)
@@ -74,8 +72,8 @@ end
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 720, 0, 560)
-mainFrame.Position = UDim2.new(0.5, -360, 0.5, -280)
+mainFrame.Size = UDim2.new(0, 750, 0, 580)
+mainFrame.Position = UDim2.new(0.5, -375, 0.5, -290)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
@@ -94,7 +92,6 @@ shadow.ImageTransparency = 0.7
 shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 shadow.Parent = mainFrame
-
 createGradient(mainFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)
 
 -- Barra de Título
@@ -117,6 +114,7 @@ titleLabel.TextSize = 18
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
+-- Botões de controle
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 35, 0, 35)
@@ -270,11 +268,10 @@ UserInputService.InputEnded:Connect(function(input)
         dragging = false
     end
 end)-- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 2/4)
--- PAINEL DE ABAS E FUNÇÕES DE CRIAÇÃO DE UI (COM ESPAÇAMENTO)
+-- SHINKAHUB (PARTE 2/4) – ABAS E FUNÇÕES DE CRIAÇÃO DE UI
 -- ===================================================================
 
--- Painel de abas
+-- Painel de abas (ScrollingFrame)
 local tabsPanel = Instance.new("ScrollingFrame")
 tabsPanel.Name = "TabsPanel"
 tabsPanel.Size = UDim2.new(0, 150, 1, -10)
@@ -292,17 +289,19 @@ tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Abas: Hitbox, Serve, JumpESP, Predict
+-- Dados das abas (agora com 5 abas)
 local tabsData = {
     {name = "Hitbox", icon = "🎯", order = 1, highlightColor = Color3.fromRGB(255, 100, 100)},
     {name = "Serve", icon = "💪", order = 2, highlightColor = Color3.fromRGB(100, 255, 100)},
     {name = "JumpESP", icon = "👆", order = 3, highlightColor = Color3.fromRGB(100, 100, 255)},
     {name = "Predict", icon = "🔮", order = 4, highlightColor = Color3.fromRGB(255, 255, 0)},
+    {name = "Credits", icon = "📜", order = 5, highlightColor = Color3.fromRGB(200, 100, 255)},
 }
 
 local tabButtons = {}
 local selectedTab = "Hitbox"
 
+-- Área de conteúdo
 local contentArea = Instance.new("Frame")
 contentArea.Name = "ContentArea"
 contentArea.Size = UDim2.new(1, -165, 1, -10)
@@ -312,6 +311,7 @@ contentArea.Parent = mainContentContainer
 createCorner(contentArea, 10)
 createStroke(contentArea, 1, Color3.fromRGB(50, 50, 70))
 
+-- Páginas
 local pages = {}
 for _, tab in ipairs(tabsData) do
     local page = Instance.new("Frame")
@@ -324,6 +324,7 @@ for _, tab in ipairs(tabsData) do
     pages[tab.name] = page
 end
 
+-- Função para criar botões de aba
 local function createTabButton(tab)
     local btn = Instance.new("TextButton")
     btn.Name = tab.name .. "Tab"
@@ -370,18 +371,19 @@ for _, tab in ipairs(tabsData) do
 end
 tabsPanel.CanvasSize = UDim2.new(0, 0, 0, tabsLayout.AbsoluteContentSize.Y + 10)
 
--- Layout das páginas (com padding generoso entre seções)
+-- Layout das páginas
 for name, page in pairs(pages) do
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 25)
+    layout.Padding = UDim.new(0, 20)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = page
 end
 
--- Funções de criação de elementos (com espaçamento interno)
+-- ========== FUNÇÕES DE CRIAÇÃO DE ELEMENTOS (CORRIGIDAS) ==========
 
+-- Toggle (liga/desliga)
 local function createToggle(parent, name, label, default)
     local container = Instance.new("Frame")
     container.Name = name .. "Container"
@@ -430,17 +432,22 @@ local function createToggle(parent, name, label, default)
     end
     updateVisual()
 
-    toggleBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            state = not state
-            getgenv()[name] = state
-            updateVisual()
-        end
+    -- Evento de clique (corrigido: usar MouseButton1Click no botão invisível ou no próprio toggleBg)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 1, 0)
+    button.BackgroundTransparency = 1
+    button.Text = ""
+    button.Parent = container
+    button.MouseButton1Click:Connect(function()
+        state = not state
+        getgenv()[name] = state
+        updateVisual()
     end)
 
     return container
 end
 
+-- Slider
 local function createSlider(parent, name, label, min, max, default, suffix)
     local container = Instance.new("Frame")
     container.Name = name .. "SliderContainer"
@@ -531,6 +538,7 @@ local function createSlider(parent, name, label, min, max, default, suffix)
     return container
 end
 
+-- Color Picker simplificado
 local function createColorPicker(parent, name, label, defaultColor)
     local container = Instance.new("Frame")
     container.Name = name .. "ColorContainer"
@@ -559,31 +567,20 @@ local function createColorPicker(parent, name, label, defaultColor)
     createStroke(colorDisplay, 1, Color3.fromRGB(80, 80, 100))
 
     local pickerButton = Instance.new("TextButton")
-    pickerButton.Name = "PickerButton"
     pickerButton.Size = UDim2.new(1, 0, 1, 0)
     pickerButton.BackgroundTransparency = 1
     pickerButton.Text = ""
     pickerButton.Parent = colorDisplay
 
+    -- Menu simples com cores predefinidas
     pickerButton.MouseButton1Click:Connect(function()
         local menu = Instance.new("Frame")
-        menu.Size = UDim2.new(0, 220, 0, 220)
-        menu.Position = UDim2.new(0.5, -110, 0.5, -110)
+        menu.Size = UDim2.new(0, 200, 0, 200)
+        menu.Position = UDim2.new(0.5, -100, 0.5, -100)
         menu.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
         menu.Parent = ScreenGui
         createCorner(menu, 8)
         createStroke(menu, 1, Color3.fromRGB(60, 60, 80))
-
-        local closeBtn = Instance.new("TextButton")
-        closeBtn.Size = UDim2.new(1, -10, 0, 30)
-        closeBtn.Position = UDim2.new(0, 5, 1, -35)
-        closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-        closeBtn.Text = "Fechar"
-        closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        closeBtn.Font = Enum.Font.Gotham
-        closeBtn.TextSize = 14
-        closeBtn.Parent = menu
-        createCorner(closeBtn, 6)
 
         local colors = {
             Color3.fromRGB(255, 0, 0),
@@ -597,14 +594,15 @@ local function createColorPicker(parent, name, label, defaultColor)
         }
 
         local grid = Instance.new("Frame")
-        grid.Size = UDim2.new(1, -10, 1, -50)
+        grid.Size = UDim2.new(1, -10, 1, -40)
         grid.Position = UDim2.new(0, 5, 0, 5)
         grid.BackgroundTransparency = 1
         grid.Parent = menu
 
-        local function createColorOption(color)
+        for i, color in ipairs(colors) do
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 45, 0, 45)
+            btn.Size = UDim2.new(0, 40, 0, 40)
+            btn.Position = UDim2.new(0, ((i-1)%4)*45, 0, math.floor((i-1)/4)*45)
             btn.BackgroundColor3 = color
             btn.Text = ""
             btn.Parent = grid
@@ -617,16 +615,16 @@ local function createColorPicker(parent, name, label, defaultColor)
             end)
         end
 
-        for _, color in ipairs(colors) do
-            createColorOption(color)
-        end
-
-        local gridLayout = Instance.new("UIGridLayout")
-        gridLayout.CellSize = UDim2.new(0, 50, 0, 50)
-        gridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
-        gridLayout.FillDirection = Enum.FillDirection.Horizontal
-        gridLayout.StartCorner = Enum.StartCorner.TopLeft
-        gridLayout.Parent = grid
+        local closeBtn = Instance.new("TextButton")
+        closeBtn.Size = UDim2.new(1, -10, 0, 30)
+        closeBtn.Position = UDim2.new(0, 5, 1, -35)
+        closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+        closeBtn.Text = "Fechar"
+        closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        closeBtn.Font = Enum.Font.Gotham
+        closeBtn.TextSize = 14
+        closeBtn.Parent = menu
+        createCorner(closeBtn, 6)
 
         closeBtn.MouseButton1Click:Connect(function()
             menu:Destroy()
@@ -636,6 +634,7 @@ local function createColorPicker(parent, name, label, defaultColor)
     return container
 end
 
+-- Seção com título
 local function createSection(parent, title)
     local section = Instance.new("Frame")
     section.Name = title .. "Section"
@@ -668,7 +667,7 @@ local function createSection(parent, title)
     content.BackgroundTransparency = 1
     content.Parent = section
 
-    -- Layout interno da seção para espaçar os elementos
+    -- Layout interno da seção
     local contentLayout = Instance.new("UIListLayout")
     contentLayout.Padding = UDim.new(0, 12)
     contentLayout.FillDirection = Enum.FillDirection.Vertical
@@ -678,15 +677,14 @@ local function createSection(parent, title)
 
     return section, content
 end-- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 3/4)
--- CONTEÚDO DAS ABAS HITBOX E SERVE
+-- SHINKAHUB (PARTE 3/4) – CONTEÚDO DAS ABAS HITBOX, SERVE, JUMPESP, PREDICT
 -- ===================================================================
 
 -- ========== ABA HITBOX ==========
 local hitboxPage = pages["Hitbox"]
 
 local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
-ballSection.Size = UDim2.new(1, 0, 0, 200)  -- Altura para 3 elementos + padding
+ballSection.Size = UDim2.new(1, 0, 0, 210)
 
 createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
 createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1.0, 5.0, 2.0, "x")
@@ -696,17 +694,15 @@ createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().Ball
 local servePage = pages["Serve"]
 
 local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
-serveSection.Size = UDim2.new(1, 0, 0, 80)  -- Altura para 1 elemento + padding
-createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)-- ===================================================================
--- SHINKAHUB - VOLLEYBALL LEGENDS (PARTE 4/4)
--- CONTEÚDO DAS ABAS JUMPESP E PREDICT + HEARTBEAT FUNCIONAL
--- ===================================================================
+serveSection.Size = UDim2.new(1, 0, 0, 80)
+
+createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)
 
 -- ========== ABA JUMP ESP ==========
 local jumpPage = pages["JumpESP"]
 
 local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
-jumpSection.Size = UDim2.new(1, 0, 0, 140)  -- Altura para 2 elementos + padding
+jumpSection.Size = UDim2.new(1, 0, 0, 140)
 
 createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
 createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
@@ -715,11 +711,78 @@ createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpE
 local predictPage = pages["Predict"]
 
 local predictSection, predictContent = createSection(predictPage, "Predict Aim")
-predictSection.Size = UDim2.new(1, 0, 0, 200)  -- Altura para 3 elementos + padding
+predictSection.Size = UDim2.new(1, 0, 0, 200)
 
 createToggle(predictContent, "PredictAim", "Enable Predict Aim", false)
 createSlider(predictContent, "PredictionLength", "Prediction Length", 1, 20, 5, " studs")
-createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)
+createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)-- ===================================================================
+-- SHINKAHUB (PARTE 4/4) – CRÉDITOS + HEARTBEAT FUNCIONAL
+-- ===================================================================
+
+-- ========== ABA CREDITS ==========
+local creditsPage = pages["Credits"]
+
+-- Seção Créditos
+local creditsSection, creditsContent = createSection(creditsPage, "Créditos")
+creditsSection.Size = UDim2.new(1, 0, 0, 250)
+
+-- Texto de créditos
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, -10, 0, 40)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "👑 Criado por: ImShinka"
+creditLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
+creditLabel.Font = Enum.Font.GothamBold
+creditLabel.TextSize = 20
+creditLabel.TextXAlignment = Enum.TextXAlignment.Left
+creditLabel.Parent = creditsContent
+
+local deepLabel = Instance.new("TextLabel")
+deepLabel.Size = UDim2.new(1, -10, 0, 30)
+deepLabel.BackgroundTransparency = 1
+deepLabel.Text = "🤝 Deep (Co-criador)"
+deepLabel.TextColor3 = Color3.fromRGB(100, 255, 255)
+deepLabel.Font = Enum.Font.Gotham
+deepLabel.TextSize = 18
+deepLabel.TextXAlignment = Enum.TextXAlignment.Left
+deepLabel.Parent = creditsContent
+
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Size = UDim2.new(1, -10, 0, 30)
+discordLabel.BackgroundTransparency = 1
+discordLabel.Text = "📱 Discord:"
+discordLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+discordLabel.Font = Enum.Font.Gotham
+discordLabel.TextSize = 18
+discordLabel.TextXAlignment = Enum.TextXAlignment.Left
+discordLabel.Parent = creditsContent
+
+-- Botão com link do Discord (copia para área de transferência)
+local discordBtn = Instance.new("TextButton")
+discordBtn.Size = UDim2.new(1, -10, 0, 40)
+discordBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+discordBtn.Text = "https://discord.gg/SNutmtu6x"
+discordBtn.TextColor3 = Color3.fromRGB(100, 200, 255)
+discordBtn.Font = Enum.Font.GothamSemibold
+discordBtn.TextSize = 14
+discordBtn.Parent = creditsContent
+createCorner(discordBtn, 8)
+createStroke(discordBtn, 1, Color3.fromRGB(70, 70, 100))
+
+discordBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/SNutmtu6x")
+    discordBtn.Text = "Link copiado!"
+    wait(1)
+    discordBtn.Text = "https://discord.gg/SNutmtu6x"
+end)
+
+-- Efeito hover
+discordBtn.MouseEnter:Connect(function()
+    tweenObject(discordBtn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
+end)
+discordBtn.MouseLeave:Connect(function()
+    tweenObject(discordBtn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
+end)
 
 -- ========== HEARTBEAT LOOP - FUNÇÕES ATIVAS ==========
 
@@ -727,7 +790,7 @@ local hitboxOverlay = nil
 local jumpESPLines = {}
 local predictLines = {}
 
--- Função para encontrar a bola (vários nomes possíveis)
+-- Função para encontrar a bola
 local function findBall()
     local ballNames = {"Ball", "Volleyball", "Vball", "GameBall"}
     for _, name in ipairs(ballNames) do
@@ -737,7 +800,7 @@ local function findBall()
     return nil
 end
 
--- Função para encontrar remote de saque (vários nomes possíveis)
+-- Função para encontrar remote de saque
 local function findServeRemote()
     local remoteNames = {"Serve", "ServeBall", "HitBall", "StrongServe", "PowerServe"}
     for _, name in ipairs(remoteNames) do
@@ -750,28 +813,6 @@ local function findServeRemote()
         end
     end
     return nil
-end
-
--- Função para criar uma beam (linha) entre dois pontos
-local function createBeam(part, color, width)
-    local attach1 = Instance.new("Attachment")
-    attach1.Name = "BeamAttach1"
-    attach1.Parent = part
-    
-    local attach2 = Instance.new("Attachment")
-    attach2.Name = "BeamAttach2"
-    attach2.Parent = part
-    
-    local beam = Instance.new("Beam")
-    beam.Attachment0 = attach1
-    beam.Attachment1 = attach2
-    beam.Width0 = width
-    beam.Width1 = width
-    beam.Transparency = NumberSequence.new(0)
-    beam.Color = ColorSequence.new(color)
-    beam.Parent = Workspace
-    
-    return {attach1, attach2, beam}
 end
 
 RunService.Heartbeat:Connect(function()
@@ -809,11 +850,10 @@ RunService.Heartbeat:Connect(function()
     if getgenv().AutoStrongServe then
         local remote = findServeRemote()
         if remote then
-            -- Tenta enviar com parâmetros comuns: força máxima ou "strong"
             pcall(function()
-                remote:FireServer(100)  -- força numérica
-                remote:FireServer("strong")  -- string
-                remote:FireServer(true)  -- boolean
+                remote:FireServer(100)
+                remote:FireServer("strong")
+                remote:FireServer(true)
             end)
         end
     end
@@ -824,7 +864,6 @@ RunService.Heartbeat:Connect(function()
             if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
                 local hum = player.Character.Humanoid
                 local root = player.Character.HumanoidRootPart
-                -- Verifica se está pulando (no ar)
                 if hum:GetState() == Enum.HumanoidStateType.Jumping or hum.FloorMaterial == Enum.Material.Air then
                     if not jumpESPLines[player] then
                         local attach1 = Instance.new("Attachment")
@@ -923,6 +962,6 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Pequena notificação de carregamento
-print("✅ ShinkaHub - Volleyball Legends carregado com sucesso!")
+print("✅ ShinkaHub - Volleyball Legends carregado!")
 print("🎯 Funções: Ball Hitbox | Auto Strong Serve | Jump ESP | Predict Aim")
+print("📱 Discord: https://discord.gg/SNutmtu6x")
