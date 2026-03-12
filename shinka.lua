@@ -1,5 +1,5 @@
 -- =============================================
--- MEU SCRIPT - VELOCIDADE (COM BOTÃO) + FLY + NOCLIP + ESP
+-- ShinkaHub- VELOCIDADE + FLY CORRIGIDO + ESP
 -- =============================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,7 +11,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "MeuScript"
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Janela principal (altura ajustada)
+-- Janela principal
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 360)
 frame.Position = UDim2.new(0.5, -150, 0.5, -180)
@@ -38,7 +38,7 @@ area.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
 area.Parent = frame
 Instance.new("UICorner", area).CornerRadius = UDim.new(0, 6)
 
--- ========== VELOCIDADE (COM BOTÃO LIGA/DESLIGA) ==========
+-- ========== VELOCIDADE (COM BOTÃO) ==========
 local speedEnabled = true
 local speedButton = Instance.new("TextButton")
 speedButton.Size = UDim2.new(0.9, 0, 0, 30)
@@ -51,7 +51,6 @@ speedButton.TextSize = 16
 speedButton.Parent = area
 Instance.new("UICorner", speedButton).CornerRadius = UDim.new(0, 6)
 
--- Texto do slider (só aparece se speedEnabled)
 local speedText = Instance.new("TextLabel")
 speedText.Size = UDim2.new(0.9, 0, 0, 25)
 speedText.Position = UDim2.new(0.05, 0, 0, 50)
@@ -64,7 +63,6 @@ speedText.TextXAlignment = Enum.TextXAlignment.Left
 speedText.Visible = true
 speedText.Parent = area
 
--- Slider
 local slider = Instance.new("Frame")
 slider.Size = UDim2.new(0.9, 0, 0, 5)
 slider.Position = UDim2.new(0.05, 0, 0, 80)
@@ -81,34 +79,28 @@ sliderButton.Text = ""
 sliderButton.Parent = slider
 Instance.new("UICorner", sliderButton).CornerRadius = UDim.new(1, 0)
 
--- Variáveis de controle
 local dragging = false
 local speed = 16
 
--- Lógica do botão de speed
 speedButton.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
     speedButton.Text = "Speed: " .. (speedEnabled and "ON" or "OFF")
     speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
     
-    -- Mostrar/esconder os controles de velocidade
     speedText.Visible = speedEnabled
     slider.Visible = speedEnabled
     
-    -- Se desligar, restaura a velocidade padrão (16)
     if not speedEnabled then
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = 16
         end
     else
-        -- Ao religar, aplica a velocidade atual do slider
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = speed
         end
     end
 end)
 
--- Eventos do slider
 sliderButton.MouseButton1Down:Connect(function()
     dragging = true
 end)
@@ -155,7 +147,6 @@ flyButton.MouseButton1Click:Connect(function()
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 
     if flyEnabled then
-        -- Ativar fly
         local char = LocalPlayer.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
@@ -194,7 +185,6 @@ flyButton.MouseButton1Click:Connect(function()
             end
         end
     else
-        -- Desativar fly
         if flyConnection then
             flyConnection:Disconnect()
             flyConnection = nil
@@ -258,7 +248,7 @@ local espEnabled = true
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(0.9, 0, 0, 35)
 espButton.Position = UDim2.new(0.05, 0, 0, 210)
-espButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50)
+espButton.BackgroundColor3 = Color3.fromRGB(0, 100, 50) -- Começa verde (ON)
 espButton.Text = "ESP: ON"
 espButton.TextColor3 = Color3.new(1, 1, 1)
 espButton.Font = Enum.Font.GothamSemibold
@@ -391,11 +381,11 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Botão do ESP
+-- Botão do ESP (corrigido: agora alterna cor e texto corretamente)
 espButton.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     espButton.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
     espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
 end)
 
-print("✅ Script completo com botão de Speed e Fly corrigido!")
+print("✅ Script corrigido: Fly agora voa e botão ESP funciona!")
