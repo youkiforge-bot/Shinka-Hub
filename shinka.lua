@@ -1,12 +1,12 @@
--- Shinka Hub Mobile (Versão Celular)
+-- Shinka Hub Mobile (PlayerGui) - Versão Corrigida
 local p=game:GetService"Players"local rs=game:GetService"RunService"local u=game:GetService"UserInputService"local l=game:GetService"Lighting"local lp=p.LocalPlayer local c=workspace.CurrentCamera
+local playerGui = lp:WaitForChild("PlayerGui") -- Usa PlayerGui em vez de CoreGui
 
--- GUI principal (tamanho ajustado para celular)
-local hub=Instance.new("ScreenGui")hub.Name="ShinkaHub"hub.Parent=game.CoreGui
+-- GUI principal
+local hub=Instance.new("ScreenGui")hub.Name="ShinkaHub"hub.Parent=playerGui
 hub.ResetOnSpawn = false -- Não resetar ao morrer
 
-local main=Instance.new("Frame")main.Size=UDim2.new(0,350,0,500) -- Mais alto para caber os botões
-main.Position=UDim2.new(0.5,-175,0.5,-250)main.BackgroundColor3=Color3.fromRGB(30,30,35)main.Active=true main.Draggable=true main.Parent=hub
+local main=Instance.new("Frame")main.Size=UDim2.new(0,350,0,500)main.Position=UDim2.new(0.5,-175,0.5,-250)main.BackgroundColor3=Color3.fromRGB(30,30,35)main.Active=true main.Draggable=true main.Parent=hub
 Instance.new("UICorner",main).CornerRadius=UDim.new(0,8)
 Instance.new("UIStroke",main).Color=Color3.fromRGB(100,0,255)
 
@@ -15,19 +15,19 @@ local bar=Instance.new("Frame")bar.Size=UDim2.new(1,0,0,30)bar.BackgroundColor3=
 Instance.new("UICorner",bar).CornerRadius=UDim.new(0,8)
 local titulo=Instance.new("TextLabel")titulo.Size=UDim2.new(0,150,1,0)titulo.Position=UDim2.new(0,10,0,0)titulo.BackgroundTransparency=1 titulo.Text="Shinka Hub"titulo.TextColor3=Color3.fromRGB(220,220,255)titulo.TextSize=18 titulo.Font=Enum.Font.GothamBold titulo.TextXAlignment=Enum.TextXAlignment.Left titulo.Parent=bar
 
--- Botão minimizar (fechar temporariamente)
+-- Botão minimizar
 local min=Instance.new("TextButton")min.Size=UDim2.new(0,25,0,25)min.Position=UDim2.new(1,-60,0,2.5)min.BackgroundColor3=Color3.fromRGB(80,80,150)min.Text="−"min.TextColor3=Color3.new(1,1,1)min.Font=Enum.Font.GothamBold min.TextSize=20 min.Parent=bar min.MouseButton1Click:Connect(function()hub.Enabled=false end)
 
--- Botão fechar (destruir)
+-- Botão fechar
 local cls=Instance.new("TextButton")cls.Size=UDim2.new(0,25,0,25)cls.Position=UDim2.new(1,-30,0,2.5)cls.BackgroundColor3=Color3.fromRGB(200,50,50)cls.Text="×"cls.TextColor3=Color3.new(1,1,1)cls.Font=Enum.Font.GothamBold cls.TextSize=20 cls.Parent=bar cls.MouseButton1Click:Connect(function()hub:Destroy()end)
 
--- Botão flutuante para reabrir (quando minimizado)
+-- Botão flutuante para reabrir
 local reopen=Instance.new("TextButton")reopen.Size=UDim2.new(0,50,0,50)reopen.Position=UDim2.new(0,10,0.5,-25)reopen.BackgroundColor3=Color3.fromRGB(100,0,255)reopen.Text="SH"reopen.TextColor3=Color3.new(1,1,1)reopen.Font=Enum.Font.GothamBold reopen.TextSize=20 reopen.Parent=hub
 reopen.Visible=false reopen.MouseButton1Click:Connect(function()hub.Enabled=true reopen.Visible=false end)
 min.MouseButton1Click:Connect(function()hub.Enabled=false reopen.Visible=true end)
 
--- Abas (layout vertical para caber na tela)
-local abas={"Movement","Visuals","ESP","Aimbot"}local icons={"⚡","👁️","📡","🎯"}local botoes={}local conteudo={}
+-- Abas
+local abas={"Movement","Visuals","ESP","Aimbot"}local icons={"⚡","👁️","📡","🎯"}local botoes={}
 
 for i=1,4 do
     local btn=Instance.new("TextButton")btn.Size=UDim2.new(0,70,0,30)btn.Position=UDim2.new(0,10+(i-1)*80,0,35)btn.BackgroundColor3=Color3.fromRGB(50,50,55)btn.Text=icons[i].." "..abas[i]btn.TextColor3=Color3.fromRGB(200,200,200)btn.Font=Enum.Font.GothamSemibold btn.TextSize=12 btn.Parent=main
@@ -39,7 +39,7 @@ local area=Instance.new("Frame")area.Size=UDim2.new(1,-20,0,390)area.Position=UD
 Instance.new("UICorner",area).CornerRadius=UDim.new(0,8)
 local conteiner=Instance.new("Frame")conteiner.Size=UDim2.new(1,-20,1,-20)conteiner.Position=UDim2.new(0,10,0,10)conteiner.BackgroundTransparency=1 conteiner.Parent=area
 
--- Função auxiliar para criar botões dentro das abas
+-- Função auxiliar para botões
 local function novobtn(p,txt,cor,f)local b=Instance.new("TextButton")b.Size=UDim2.new(0.9,0,0,35)b.Position=UDim2.new(0.05,0,p,0)b.BackgroundColor3=cor or Color3.fromRGB(60,60,70)b.Text=txt b.TextColor3=Color3.new(1,1,1)b.Font=Enum.Font.GothamSemibold b.TextSize=14 b.Parent=conteiner
 Instance.new("UICorner",b).CornerRadius=UDim.new(0,6)if f then b.MouseButton1Click:Connect(f)end return b end
 
@@ -47,8 +47,7 @@ Instance.new("UICorner",b).CornerRadius=UDim.new(0,6)if f then b.MouseButton1Cli
 local moveF=Instance.new("Frame")moveF.Size=UDim2.new(1,0,1,0)moveF.BackgroundTransparency=1 moveF.Parent=conteiner
 local spdTxt=Instance.new("TextLabel")spdTxt.Size=UDim2.new(0.9,0,0,20)spdTxt.Position=UDim2.new(0.05,0,0,10)spdTxt.BackgroundTransparency=1 spdTxt.Text="Walkspeed: 16"spdTxt.TextColor3=Color3.fromRGB(200,200,200)spdTxt.Font=Enum.Font.Gotham spdTxt.TextSize=14 spdTxt.TextXAlignment=Enum.TextXAlignment.Left spdTxt.Parent=moveF
 local slider=Instance.new("Frame")slider.Size=UDim2.new(0.9,0,0,5)slider.Position=UDim2.new(0.05,0,0,35)slider.BackgroundColor3=Color3.fromRGB(80,80,90)slider.Parent=moveF
-local btnSlider=Instance.new("TextButton")btnSlider.Size=UDim2.new(0,20,0,20) -- Maior para toque
-btnSlider.Position=UDim2.new(0.5,-10,0,-7.5)btnSlider.BackgroundColor3=Color3.fromRGB(100,0,255)btnSlider.Text=""btnSlider.Parent=slider
+local btnSlider=Instance.new("TextButton")btnSlider.Size=UDim2.new(0,20,0,20)btnSlider.Position=UDim2.new(0.5,-10,0,-7.5)btnSlider.BackgroundColor3=Color3.fromRGB(100,0,255)btnSlider.Text=""btnSlider.Parent=slider
 local fly=false local flyBtn=novobtn(70,"Fly: OFF",nil,function()fly=not fly flyBtn.Text="Fly: "..(fly and"ON"or"OFF")flyBtn.BackgroundColor3=fly and Color3.fromRGB(0,100,50)or Color3.fromRGB(60,60,70)end)
 local noclip=false local noclipConn local noclipBtn=novobtn(110,"Noclip: OFF",nil,function()noclip=not noclip noclipBtn.Text="Noclip: "..(noclip and"ON"or"OFF")noclipBtn.BackgroundColor3=noclip and Color3.fromRGB(0,100,50)or Color3.fromRGB(60,60,70)
 if noclip then noclipConn=rs.Stepped:Connect(function()if lp.Character then for _,v in pairs(lp.Character:GetChildren())do if v:IsA"BasePart"then v.CanCollide=false end end end end)else if noclipConn then noclipConn:Disconnect()noclipConn=nil end end end)
@@ -65,7 +64,7 @@ local nf=false local nfBtn=novobtn(50,"No Fog: OFF",nil,function()nf=not nf
 if nf then l.FogEnd=1e5 else l.FogEnd=origFog end
 nfBtn.Text="No Fog: "..(nf and"ON"or"OFF")nfBtn.BackgroundColor3=nf and Color3.fromRGB(0,100,50)or Color3.fromRGB(60,60,70)end)
 
--- Aba ESP (apenas informativa)
+-- Aba ESP
 local espF=Instance.new("Frame")espF.Size=UDim2.new(1,0,1,0)espF.BackgroundTransparency=1 espF.Parent=conteiner
 local espTxt=Instance.new("TextLabel")espTxt.Size=UDim2.new(0.9,0,0,80)espTxt.Position=UDim2.new(0.05,0,0,10)espTxt.BackgroundTransparency=1 espTxt.Text="ESP ativo automaticamente.\nMostra contorno e distância dos jogadores."espTxt.TextColor3=Color3.fromRGB(180,180,180)espTxt.TextSize=14 espTxt.Font=Enum.Font.Gotham espTxt.TextWrapped=true espTxt.TextXAlignment=Enum.TextXAlignment.Left espTxt.Parent=espF
 
@@ -88,7 +87,7 @@ if n=="Movement"then moveF.Visible=true elseif n=="Visuals"then visF.Visible=tru
 for i=1,4 do botoes[i].MouseButton1Click:Connect(function()mostrarAba(abas[i])for j=1,4 do botoes[j].BackgroundColor3=j==i and Color3.fromRGB(80,80,120)or Color3.fromRGB(50,50,55)end end)end
 mostrarAba("Movement")botoes[1].BackgroundColor3=Color3.fromRGB(80,80,120)
 
--- ESP (funcional)
+-- ESP funcional
 local esp={}local function criarESP(pl)if pl==lp or not pl.Character then return end local ch=pl.Character local r=ch:FindFirstChild("HumanoidRootPart")or ch:FindFirstChild("Torso")if not r then return end
 if esp[pl]then for _,o in pairs(esp[pl])do pcall(o.Destroy,o)end end
 local h=Instance.new("Highlight")h.Name="ShinkaESP"h.FillColor=Color3.fromRGB(255,0,0)h.FillTransparency=0.5 h.OutlineColor=Color3.new(1,1,1)h.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop h.Parent=ch
@@ -104,4 +103,4 @@ if r and h and h.Health>0 then local dist=(c.CFrame.Position-r.Position).Magnitu
 if ob[2]then ob[2].Enabled=true for _,l in pairs(ob[2]:GetChildren())do if l:IsA"TextLabel"and l.Text:match("%.1fm")then l.Text=string.format("%.1fm",dist)end end end
 else if ob[2]then ob[2].Enabled=false end end end end end)
 
-print("Shinka Hub Mobile carregado! Use o botão SH para reabrir.")
+print("Shinka Hub Mobile (PlayerGui) carregado! Botão SH para reabrir.")
