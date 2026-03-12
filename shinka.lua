@@ -1,188 +1,426 @@
--- =============================================
--- SHINKA HUB - ESTILO SPEED HUB X
--- =============================================
+-- ============================================
+-- PARTE 1/4: Speed Hub X | Version 3.7.0
+-- Serviços, Variáveis Globais e Funções Auxiliares
+-- ============================================
+
+-- ========== Serviços ==========
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
--- GUI principal
-local gui = Instance.new("ScreenGui")
-gui.Name = "ShinkaHub"
-gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-gui.ResetOnSpawn = false
+-- ========== Variáveis Globais (getgenv) ==========
+getgenv().AutoVoid = false
+getgenv().AutoBlock = false
+getgenv().AntiSlow = false
+getgenv().SafeModeToggle = false
+getgenv().SafeModeHealth = 50
+getgenv().SafeModeBackHealth = 69
+getgenv().SelectedCharacter = "Bald"  -- para o dropdown
 
--- Janela principal (começa com altura 0 para animação)
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 0) -- Largura maior para caber abas
-frame.Position = UDim2.new(0.5, -200, 0.5, -250)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-frame.Active = true
-frame.Draggable = true
-frame.ClipsDescendants = true
-frame.Parent = gui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-Instance.new("UIStroke", frame).Color = Color3.fromRGB(100, 0, 255)
+-- ========== Configurações de UI ==========
+local Player = Players.LocalPlayer
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedHubX_GUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Barra de título
+-- Se já existir, destroi para recriar
+for _, v in ipairs(CoreGui:GetChildren()) do
+    if v.Name == "SpeedHubX_GUI" then
+        v:Destroy()
+    end
+end
+ScreenGui.Parent = CoreGui
+
+-- ========== Funções Auxiliares ==========
+local function createGradient(parent, color1, color2, rotation)
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)})
+    gradient.Rotation = rotation or 0
+    gradient.Parent = parent
+    return gradient
+end
+
+local function createStroke(parent, thickness, color)
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = thickness or 1
+    stroke.Color = color or Color3.fromRGB(60, 60, 80)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = parent
+    return stroke
+end
+
+local function createCorner(parent, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius or 8)
+    corner.Parent = parent
+    return corner
+end
+
+local function tweenObject(obj, props, time, easing)
+    local tweenInfo = TweenInfo.new(time or 0.2, (easing and Enum.EasingStyle[easing]) or Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(obj, tweenInfo, props)
+    tween:Play()
+    return tween
+end
+
+-- ========== Frame Principal ==========
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 600, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = ScreenGui
+
+createCorner(mainFrame, 12)
+createStroke(mainFrame, 2, Color3.fromRGB(40, 40, 60))
+
+-- Sombra suave (imagem de sombra)
+local shadow = Instance.new("ImageLabel")
+shadow.Name = "Shadow"
+shadow.Size = UDim2.new(1, 20, 1, 20)
+shadow.Position = UDim2.new(0, -10, 0, -10)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://6015897843" -- sombra arredondada
+shadow.ImageColor3 = Color3.new(0, 0, 0)
+shadow.ImageTransparency = 0.7
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+shadow.Parent = mainFrame
+
+-- Gradient de fundo sutil
+createGradient(mainFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)-- ============================================
+-- PARTE 2/4: Speed Hub X | Version 3.7.0
+-- Barra de Título, Abas Laterais e Estrutura de Páginas
+-- ============================================
+
+-- ========== Barra de Título ==========
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 30)
-titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-titleBar.Parent = frame
-Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+titleBar.Parent = mainFrame
+createCorner(titleBar, 12)
+-- Só arredondar em cima
+titleBar.Corner.CornerRadius = UDim.new(0, 12) -- será ajustado depois com um canvas group? melhor deixar assim.
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(0, 200, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
+titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Shinka Hub | Version 4.0"
-titleLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
-titleLabel.TextSize = 18
+titleLabel.Text = "Speed Hub X | Version: 3.7.0"
+titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 16
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- Botão minimizar
+-- Botões de controle
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -40, 0.5, -15)
+closeButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 16
+closeButton.Parent = titleBar
+createCorner(closeButton, 6)
+createStroke(closeButton, 1, Color3.fromRGB(80, 80, 100))
+
 local minButton = Instance.new("TextButton")
-minButton.Size = UDim2.new(0, 25, 0, 25)
-minButton.Position = UDim2.new(1, -60, 0, 2.5)
-minButton.BackgroundColor3 = Color3.fromRGB(80, 80, 150)
+minButton.Name = "MinButton"
+minButton.Size = UDim2.new(0, 30, 0, 30)
+minButton.Position = UDim2.new(1, -80, 0.5, -15)
+minButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
 minButton.Text = "−"
-minButton.TextColor3 = Color3.new(1, 1, 1)
+minButton.TextColor3 = Color3.fromRGB(200, 200, 220)
 minButton.Font = Enum.Font.GothamBold
 minButton.TextSize = 20
 minButton.Parent = titleBar
+createCorner(minButton, 6)
+createStroke(minButton, 1, Color3.fromRGB(80, 80, 100))
 
--- Botão fechar
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(1, -30, 0, 2.5)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeButton.Text = "×"
-closeButton.TextColor3 = Color3.new(1, 1, 1)
-closeButton.Font = Enum.Font.GothamBold
-closeButton.TextSize = 20
-closeButton.Parent = titleBar
-closeButton.MouseButton1Click:Connect(function() gui:Destroy() end)
+-- Hover nos botões
+local function hoverEffect(btn, hoverColor)
+    btn.MouseEnter:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = hoverColor}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 60)}, 0.15)
+    end)
+end
+hoverEffect(closeButton, Color3.fromRGB(70, 70, 90))
+hoverEffect(minButton, Color3.fromRGB(70, 70, 90))
 
--- Botão flutuante para reabrir (logo)
-local reopenButton = Instance.new("TextButton")
-reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0, 10, 0.5, -20)
-reopenButton.BackgroundColor3 = Color3.fromRGB(100, 0, 255)
-reopenButton.Text = "ShinkaHub"
-reopenButton.TextColor3 = Color3.new(1, 1, 1)
-reopenButton.Font = Enum.Font.GothamBold
-reopenButton.TextSize = 18
-reopenButton.Parent = gui
-reopenButton.Visible = false
-Instance.new("UICorner", reopenButton).CornerRadius = UDim.new(0, 6)
-Instance.new("UIStroke", reopenButton).Color = Color3.fromRGB(150, 150, 255)
+-- ========== Container Principal (abaixo da barra de título) ==========
+local mainContentContainer = Instance.new("Frame")
+mainContentContainer.Name = "MainContentContainer"
+mainContentContainer.Size = UDim2.new(1, 0, 1, -35)
+mainContentContainer.Position = UDim2.new(0, 0, 0, 35)
+mainContentContainer.BackgroundTransparency = 1
+mainContentContainer.Parent = mainFrame
 
-reopenButton.MouseButton1Click:Connect(function()
-    gui.Enabled = true
-    frame.Size = UDim2.new(0, 400, 0, 0)
-    TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 400, 0, 500)}):Play()
-    reopenButton.Visible = false
-end)
+-- ========== Abas Laterais (ScrollingFrame) ==========
+local tabsPanel = Instance.new("ScrollingFrame")
+tabsPanel.Name = "TabsPanel"
+tabsPanel.Size = UDim2.new(0, 120, 1, -10)
+tabsPanel.Position = UDim2.new(0, 5, 0, 5)
+tabsPanel.BackgroundTransparency = 1
+tabsPanel.ScrollBarThickness = 4
+tabsPanel.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 120)
+tabsPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tabsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabsPanel.Parent = mainContentContainer
 
-minButton.MouseButton1Click:Connect(function()
-    gui.Enabled = false
-    reopenButton.Visible = true
-end)
+-- Layout automático vertical
+local tabsLayout = Instance.new("UIListLayout")
+tabsLayout.Padding = UDim.new(0, 6)
+tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabsLayout.Parent = tabsPanel
 
--- Animação de abertura inicial
-TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 400, 0, 500)}):Play()
+-- Dados das abas: Nome, Ícone (emoji), Ordem
+local tabsData = {
+    {name = "Home", icon = "🏠", order = 1},
+    {name = "Main", icon = "⚙️", order = 2},
+    {name = "Farming", icon = "🌾", order = 3, highlightColor = Color3.fromRGB(200, 50, 50)},
+    {name = "Killer", icon = "⚔️", order = 4},
+    {name = "Misc", icon = "🧰", order = 5},
+}
 
--- Abas
-local tabs = {"Movement", "Visuals", "ESP", "Aimbot", "Teleport"}
 local tabButtons = {}
-local tabFrames = {}
+local selectedTab = "Farming" -- padrão
 
--- Criar botões das abas
-for i, name in ipairs(tabs) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 70, 0, 30)
-    btn.Position = UDim2.new(0, 10 + (i-1)*75, 0, 35)
-    btn.Text = name
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 14
-    btn.Parent = frame
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    tabButtons[i] = btn
-end
-
--- Área de conteúdo
+-- ========== Área de Conteúdo Principal ==========
 local contentArea = Instance.new("Frame")
-contentArea.Size = UDim2.new(1, -20, 1, -80)
-contentArea.Position = UDim2.new(0, 10, 0, 70)
-contentArea.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-contentArea.Parent = frame
-Instance.new("UICorner", contentArea).CornerRadius = UDim.new(0, 8)
+contentArea.Name = "ContentArea"
+contentArea.Size = UDim2.new(1, -135, 1, -10)
+contentArea.Position = UDim2.new(0, 130, 0, 5)
+contentArea.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+contentArea.Parent = mainContentContainer
+createCorner(contentArea, 10)
+createStroke(contentArea, 1, Color3.fromRGB(50, 50, 70))
 
--- Container para os frames das abas
-local container = Instance.new("Frame")
-container.Size = UDim2.new(1, -20, 1, -20)
-container.Position = UDim2.new(0, 10, 0, 10)
-container.BackgroundTransparency = 1
-container.Parent = contentArea
+-- Criar páginas para cada aba
+local pages = {}
+for _, tab in ipairs(tabsData) do
+    local page = Instance.new("Frame")
+    page.Name = tab.name .. "Page"
+    page.Size = UDim2.new(1, -20, 1, -20)
+    page.Position = UDim2.new(0, 10, 0, 10)
+    page.BackgroundTransparency = 1
+    page.Visible = (tab.name == selectedTab)
+    page.Parent = contentArea
+    pages[tab.name] = page
+end-- ============================================
+-- PARTE 3/4: Speed Hub X | Version 3.7.0
+-- Construção das Abas e Conteúdo da Aba Farming
+-- ============================================
 
--- Função auxiliar para criar botões dentro das abas
-local function createButton(parent, y, text, color, callback)
+-- ========== Construir Abas ==========
+local function createTabButton(tab)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.9, 0, 0, 30)
-    btn.Position = UDim2.new(0.05, 0, 0, y)
-    btn.BackgroundColor3 = color or Color3.fromRGB(60, 60, 70)
-    btn.Text = text
-    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Name = tab.name .. "Tab"
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.BackgroundColor3 = (tab.name == selectedTab) and (tab.highlightColor or Color3.fromRGB(60, 60, 100)) or Color3.fromRGB(35, 35, 50)
+    btn.Text = tab.icon .. "   " .. tab.name
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
     btn.Font = Enum.Font.GothamSemibold
     btn.TextSize = 14
-    btn.Parent = parent
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    if callback then
-        btn.MouseButton1Click:Connect(callback)
-    end
-    return btn
+    btn.Parent = tabsPanel
+    createCorner(btn, 8)
+    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
+
+    -- Efeito hover (menos intenso que selecionado)
+    btn.MouseEnter:Connect(function()
+        if selectedTab ~= tab.name then
+            tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}, 0.15)
+        end
+    end)
+    btn.MouseLeave:Connect(function()
+        if selectedTab ~= tab.name then
+            tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}, 0.15)
+        else
+            tweenObject(btn, {BackgroundColor3 = tab.highlightColor or Color3.fromRGB(60, 60, 100)}, 0.15)
+        end
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        if selectedTab == tab.name then return end
+        -- Atualizar visual da aba anterior
+        if tabButtons[selectedTab] then
+            tweenObject(tabButtons[selectedTab], {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}, 0.2)
+        end
+        -- Nova aba
+        selectedTab = tab.name
+        tweenObject(btn, {BackgroundColor3 = tab.highlightColor or Color3.fromRGB(60, 60, 100)}, 0.2)
+        -- Mostrar página correspondente
+        for name, page in pairs(pages) do
+            page.Visible = (name == selectedTab)
+        end
+    end)
+
+    tabButtons[tab.name] = btn
 end
 
--- Função auxiliar para criar sliders
-local function createSlider(parent, y, label, min, max, default, callback)
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(0.9, 0, 0, 20)
-    textLabel.Position = UDim2.new(0.05, 0, 0, y)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = label .. default
-    textLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    textLabel.Font = Enum.Font.Gotham
-    textLabel.TextSize = 14
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Parent = parent
+for _, tab in ipairs(tabsData) do
+    createTabButton(tab)
+end
 
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(0.9, 0, 0, 5)
-    sliderFrame.Position = UDim2.new(0.05, 0, 0, y + 25)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-    sliderFrame.Parent = parent
-    Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(1, 0)
+-- Ajustar canvas do ScrollingFrame após criar todos
+tabsPanel.CanvasSize = UDim2.new(0, 0, 0, tabsLayout.AbsoluteContentSize.Y + 10)
 
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Size = UDim2.new(0, 15, 0, 15)
-    sliderButton.Position = UDim2.new((default - min) / (max - min), -7.5, 0, -5)
-    sliderButton.BackgroundColor3 = Color3.fromRGB(100, 0, 255)
-    sliderButton.Text = ""
-    sliderButton.Parent = sliderFrame
-    Instance.new("UICorner", sliderButton).CornerRadius = UDim.new(1, 0)
+-- ========== Conteúdo da aba FARMING ==========
+local farmingPage = pages["Farming"]
+
+-- Função para criar toggle (switch)
+local function createToggle(parent, name, label, default, callback)
+    local container = Instance.new("Frame")
+    container.Name = name .. "Container"
+    container.Size = UDim2.new(1, -10, 0, 35)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+
+    local labelObj = Instance.new("TextLabel")
+    labelObj.Name = "Label"
+    labelObj.Size = UDim2.new(0.7, -5, 1, 0)
+    labelObj.Position = UDim2.new(0, 0, 0, 0)
+    labelObj.BackgroundTransparency = 1
+    labelObj.Text = label
+    labelObj.TextColor3 = Color3.fromRGB(220, 220, 240)
+    labelObj.Font = Enum.Font.Gotham
+    labelObj.TextSize = 14
+    labelObj.TextXAlignment = Enum.TextXAlignment.Left
+    labelObj.Parent = container
+
+    local toggleBg = Instance.new("Frame")
+    toggleBg.Name = "ToggleBg"
+    toggleBg.Size = UDim2.new(0, 45, 0, 22)
+    toggleBg.Position = UDim2.new(1, -50, 0.5, -11)
+    toggleBg.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    toggleBg.Parent = container
+    createCorner(toggleBg, 12)
+
+    local toggleCircle = Instance.new("Frame")
+    toggleCircle.Name = "ToggleCircle"
+    toggleCircle.Size = UDim2.new(0, 18, 0, 18)
+    toggleCircle.Position = UDim2.new(0, 2, 0.5, -9)
+    toggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggleCircle.Parent = toggleBg
+    createCorner(toggleCircle, 9)
+
+    local state = default or false
+    getgenv()[name] = state
+
+    local function updateVisual()
+        if state then
+            tweenObject(toggleCircle, {Position = UDim2.new(1, -20, 0.5, -9)}, 0.15)
+            tweenObject(toggleBg, {BackgroundColor3 = Color3.fromRGB(0, 150, 200)}, 0.15)
+        else
+            tweenObject(toggleCircle, {Position = UDim2.new(0, 2, 0.5, -9)}, 0.15)
+            tweenObject(toggleBg, {BackgroundColor3 = Color3.fromRGB(60, 60, 80)}, 0.15)
+        end
+    end
+    updateVisual()
+
+    toggleBg.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            state = not state
+            getgenv()[name] = state
+            updateVisual()
+            if callback then callback(state) end
+        end
+    end)
+
+    return container
+end
+
+-- Função para criar slider
+local function createSlider(parent, name, label, min, max, default, color)
+    local container = Instance.new("Frame")
+    container.Name = name .. "SliderContainer"
+    container.Size = UDim2.new(1, -10, 0, 45)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+
+    local labelObj = Instance.new("TextLabel")
+    labelObj.Size = UDim2.new(0.5, 0, 0.4, 0)
+    labelObj.Position = UDim2.new(0, 0, 0, 0)
+    labelObj.BackgroundTransparency = 1
+    labelObj.Text = label
+    labelObj.TextColor3 = Color3.fromRGB(200, 200, 220)
+    labelObj.Font = Enum.Font.Gotham
+    labelObj.TextSize = 13
+    labelObj.TextXAlignment = Enum.TextXAlignment.Left
+    labelObj.Parent = container
+
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Name = "ValueLabel"
+    valueLabel.Size = UDim2.new(0.5, 0, 0.4, 0)
+    valueLabel.Position = UDim2.new(0.5, 0, 0, 0)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = tostring(default)
+    valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueLabel.Font = Enum.Font.GothamBold
+    valueLabel.TextSize = 13
+    valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+    valueLabel.Parent = container
+
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Name = "SliderBg"
+    sliderBg.Size = UDim2.new(1, 0, 0, 6)
+    sliderBg.Position = UDim2.new(0, 0, 0, 22)
+    sliderBg.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    sliderBg.Parent = container
+    createCorner(sliderBg, 3)
+
+    local fill = Instance.new("Frame")
+    fill.Name = "Fill"
+    fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    fill.BackgroundColor3 = color or Color3.fromRGB(200, 50, 50)
+    fill.Parent = sliderBg
+    createCorner(fill, 3)
+
+    local thumb = Instance.new("Frame")
+    thumb.Name = "Thumb"
+    thumb.Size = UDim2.new(0, 12, 0, 12)
+    thumb.Position = UDim2.new((default - min) / (max - min), -6, 0.5, -6)
+    thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    thumb.Parent = sliderBg
+    createCorner(thumb, 6)
+    createStroke(thumb, 1, Color3.fromRGB(150, 150, 150))
 
     local dragging = false
     local value = default
+    getgenv()[name] = value
 
-    sliderButton.MouseButton1Down:Connect(function()
-        dragging = true
+    local function updateSlider(input)
+        local pos = input.Position.X - sliderBg.AbsolutePosition.X
+        local percent = math.clamp(pos / sliderBg.AbsoluteSize.X, 0, 1)
+        value = min + (max - min) * percent
+        value = math.floor(value + 0.5) -- inteiro
+        fill.Size = UDim2.new(percent, 0, 1, 0)
+        thumb.Position = UDim2.new(percent, -6, 0.5, -6)
+        valueLabel.Text = tostring(value)
+        getgenv()[name] = value
+    end
+
+    thumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateSlider(input)
+        end
     end)
 
     UserInputService.InputEnded:Connect(function(input)
@@ -191,403 +429,258 @@ local function createSlider(parent, y, label, min, max, default, callback)
         end
     end)
 
-    RunService.RenderStepped:Connect(function()
-        if dragging then
-            local mouseX = UserInputService:GetMouseLocation().X
-            local sliderX = sliderFrame.AbsolutePosition.X
-            local sliderW = sliderFrame.AbsoluteSize.X
-            local rel = math.clamp(mouseX - sliderX, 0, sliderW)
-            local perc = rel / sliderW
-            value = min + math.floor(perc * (max - min))
-            sliderButton.Position = UDim2.new(perc, -7.5, 0, -5)
-            textLabel.Text = label .. value
-            if callback then callback(value) end
-        end
-    end)
+    return container
+    end-- ============================================
+-- PARTE 4/4: Speed Hub X | Version 3.7.0
+-- Seções, Dropdown, Minimizar, Arrastar e Heartbeat
+-- ============================================
 
-    return textLabel, sliderFrame, sliderButton
+-- Função para criar seção com título
+local function createSection(parent, title)
+    local section = Instance.new("Frame")
+    section.Name = title .. "Section"
+    section.Size = UDim2.new(1, 0, 0, 0) -- altura ajustada depois
+    section.BackgroundTransparency = 1
+    section.Parent = parent
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -10, 0, 25)
+    titleLabel.Position = UDim2.new(0, 5, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 16
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = section
+
+    local line = Instance.new("Frame")
+    line.Size = UDim2.new(1, -10, 0, 2)
+    line.Position = UDim2.new(0, 5, 0, 25)
+    line.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
+    line.Parent = section
+    createCorner(line, 1)
+
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Size = UDim2.new(1, -10, 1, -35)
+    content.Position = UDim2.new(0, 5, 0, 30)
+    content.BackgroundTransparency = 1
+    content.Parent = section
+
+    return section, content
 end
 
--- ========== ABA MOVEMENT ==========
-local moveFrame = Instance.new("Frame")
-moveFrame.Size = UDim2.new(1, 0, 1, 0)
-moveFrame.BackgroundTransparency = 1
-moveFrame.Parent = container
-tabFrames["Movement"] = moveFrame
+-- Layout automático vertical dentro da página
+local pageLayout = Instance.new("UIListLayout")
+pageLayout.Padding = UDim.new(0, 15)
+pageLayout.FillDirection = Enum.FillDirection.Vertical
+pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+pageLayout.Parent = farmingPage
 
--- Slider de velocidade
-local speedLabel, speedSlider, speedButton = createSlider(moveFrame, 10, "Walkspeed: ", 16, 116, 16, function(val)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = val
-    end
-end)
+-- Seção Player
+local playerSection, playerContent = createSection(farmingPage, "Player")
+playerSection.Size = UDim2.new(1, 0, 0, 130) -- altura aproximada
+createToggle(playerContent, "AutoVoid", "Auto Void", false)
+createToggle(playerContent, "AutoBlock", "Auto Block", false)
+createToggle(playerContent, "AntiSlow", "Anti-Slow", false)
 
--- Fly
-local flyEnabled = false
-local flyConn = nil
-local flyBtn = createButton(moveFrame, 70, "Fly: OFF", nil, function()
-    flyEnabled = not flyEnabled
-    flyBtn.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
-    flyBtn.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
+-- Seção Character
+local charSection, charContent = createSection(farmingPage, "Character")
+charSection.Size = UDim2.new(1, 0, 0, 90)
 
-    if flyEnabled then
-        local char = LocalPlayer.Character
-        if char then
-            local hum = char:FindFirstChild("Humanoid")
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if hum and root then
-                hum.PlatformStand = true
-                local bg = Instance.new("BodyGyro")
-                bg.P = 9e4
-                bg.MaxTorque = Vector3.new(9e4, 9e4, 9e4)
-                bg.CFrame = root.CFrame
-                bg.Parent = root
+-- Dropdown personalizado
+local dropdownContainer = Instance.new("Frame")
+dropdownContainer.Size = UDim2.new(1, 0, 0, 35)
+dropdownContainer.BackgroundTransparency = 1
+dropdownContainer.Parent = charContent
 
-                local bv = Instance.new("BodyVelocity")
-                bv.Velocity = Vector3.new(0, 0, 0)
-                bv.MaxForce = Vector3.new(9e4, 9e4, 9e4)
-                bv.Parent = root
+local dropdownLabel = Instance.new("TextLabel")
+dropdownLabel.Size = UDim2.new(0.5, 0, 1, 0)
+dropdownLabel.BackgroundTransparency = 1
+dropdownLabel.Text = "Choose Equip Character"
+dropdownLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+dropdownLabel.Font = Enum.Font.Gotham
+dropdownLabel.TextSize = 13
+dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+dropdownLabel.Parent = dropdownContainer
 
-                flyConn = RunService.RenderStepped:Connect(function()
-                    if not flyEnabled then
-                        bg:Destroy()
-                        bv:Destroy()
-                        hum.PlatformStand = false
-                        flyConn:Disconnect()
-                        return
-                    end
-                    local move = Vector3.new(0, 0, 0)
-                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + Camera.CFrame.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - Camera.CFrame.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - Camera.CFrame.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + Camera.CFrame.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, 1, 0) end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0, 1, 0) end
-                    bv.Velocity = move * 50
-                    bg.CFrame = Camera.CFrame
-                end)
-            end
-        end
-    else
-        if flyConn then
-            flyConn:Disconnect()
-            flyConn = nil
-        end
-        local char = LocalPlayer.Character
-        if char then
-            local hum = char:FindFirstChild("Humanoid")
-            if hum then hum.PlatformStand = false end
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if root then
-                local bg = root:FindFirstChildOfClass("BodyGyro")
-                if bg then bg:Destroy() end
-                local bv = root:FindFirstChildOfClass("BodyVelocity")
-                if bv then bv:Destroy() end
-            end
-        end
-    end
-end)
+local dropdownBtn = Instance.new("TextButton")
+dropdownBtn.Size = UDim2.new(0.4, -5, 0, 30)
+dropdownBtn.Position = UDim2.new(0.6, 0, 0.5, -15)
+dropdownBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+dropdownBtn.Text = "Bald  ˅"
+dropdownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dropdownBtn.Font = Enum.Font.GothamSemibold
+dropdownBtn.TextSize = 13
+dropdownBtn.Parent = dropdownContainer
+createCorner(dropdownBtn, 6)
+createStroke(dropdownBtn, 1, Color3.fromRGB(70, 70, 100))
 
--- Noclip
-local noclipEnabled = false
-local noclipConn = nil
-local noclipBtn = createButton(moveFrame, 110, "Noclip: OFF", nil, function()
-    noclipEnabled = not noclipEnabled
-    noclipBtn.Text = "Noclip: " .. (noclipEnabled and "ON" or "OFF")
-    noclipBtn.BackgroundColor3 = noclipEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
+-- Simular dropdown ao clicar (abre uma lista simples)
+local dropdownList = Instance.new("Frame")
+dropdownList.Name = "DropdownList"
+dropdownList.Size = UDim2.new(0.4, 0, 0, 0)
+dropdownList.Position = UDim2.new(0.6, 0, 0, 40)
+dropdownList.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+dropdownList.Visible = false
+dropdownList.Parent = dropdownContainer
+createCorner(dropdownList, 6)
+createStroke(dropdownList, 1, Color3.fromRGB(60, 60, 80))
 
-    if noclipEnabled then
-        noclipConn = RunService.Stepped:Connect(function()
-            if LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if noclipConn then
-            noclipConn:Disconnect()
-            noclipConn = nil
-        end
-    end
-end)
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = dropdownList
 
--- ========== ABA VISUALS ==========
-local visFrame = Instance.new("Frame")
-visFrame.Size = UDim2.new(1, 0, 1, 0)
-visFrame.BackgroundTransparency = 1
-visFrame.Parent = container
-tabFrames["Visuals"] = visFrame
+local characters = {"Bald", "Hair", "Mask", "Cyborg"}
+for _, char in ipairs(characters) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.BackgroundTransparency = 1
+    btn.Text = char
+    btn.TextColor3 = Color3.fromRGB(220, 220, 240)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
+    btn.Parent = dropdownList
 
-local origBright, origFog, origShadow = Lighting.Brightness, Lighting.FogEnd, Lighting.GlobalShadows
-
-local fbEnabled = false
-local fbBtn = createButton(visFrame, 10, "Fullbright: OFF", nil, function()
-    fbEnabled = not fbEnabled
-    fbBtn.Text = "Fullbright: " .. (fbEnabled and "ON" or "OFF")
-    fbBtn.BackgroundColor3 = fbEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
-    if fbEnabled then
-        Lighting.Brightness = 2
-        Lighting.GlobalShadows = false
-        Lighting.Ambient = Color3.new(1, 1, 1)
-    else
-        Lighting.Brightness = origBright
-        Lighting.GlobalShadows = origShadow
-        Lighting.Ambient = Color3.new(0, 0, 0)
-    end
-end)
-
-local nfEnabled = false
-local nfBtn = createButton(visFrame, 50, "No Fog: OFF", nil, function()
-    nfEnabled = not nfEnabled
-    nfBtn.Text = "No Fog: " .. (nfEnabled and "ON" or "OFF")
-    nfBtn.BackgroundColor3 = nfEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
-    if nfEnabled then
-        Lighting.FogEnd = 1e5
-    else
-        Lighting.FogEnd = origFog
-    end
-end)
-
--- ========== ABA ESP ==========
-local espFrame = Instance.new("Frame")
-espFrame.Size = UDim2.new(1, 0, 1, 0)
-espFrame.BackgroundTransparency = 1
-espFrame.Parent = container
-tabFrames["ESP"] = espFrame
-
-local espEnabled = true
-local espBtn = createButton(espFrame, 10, "ESP: ON", Color3.fromRGB(0, 100, 50), function()
-    espEnabled = not espEnabled
-    espBtn.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
-    espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
-end)
-
-local espInfo = Instance.new("TextLabel")
-espInfo.Size = UDim2.new(0.9, 0, 0, 50)
-espInfo.Position = UDim2.new(0.05, 0, 0, 50)
-espInfo.BackgroundTransparency = 1
-espInfo.Text = "ESP ativo automaticamente.\nContorno colorido por vida."
-espInfo.TextColor3 = Color3.fromRGB(180, 180, 180)
-espInfo.TextWrapped = true
-espInfo.Parent = espFrame
-
--- Variáveis do ESP
-local espObjects = {}
-local function createESP(player)
-    if player == LocalPlayer or not player.Character then return end
-    local char = player.Character
-    local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
-    if not root then return end
-
-    if espObjects[player] then
-        for _, obj in pairs(espObjects[player]) do
-            pcall(function() obj:Destroy() end)
-        end
-    end
-
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "ShinkaESP"
-    highlight.FillColor = Color3.fromRGB(255, 0, 0)
-    highlight.FillTransparency = 0.5
-    highlight.OutlineColor = Color3.new(1, 1, 1)
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = char
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ShinkaESP_Text"
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.Parent = root
-
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 0.6, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = player.Name
-    nameLabel.TextColor3 = Color3.new(1, 1, 1)
-    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    nameLabel.TextStrokeTransparency = 0.3
-    nameLabel.TextScaled = true
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.Parent = billboard
-
-    local distLabel = Instance.new("TextLabel")
-    distLabel.Size = UDim2.new(1, 0, 0.4, 0)
-    distLabel.Position = UDim2.new(0, 0, 0.6, 0)
-    distLabel.BackgroundTransparency = 1
-    distLabel.Text = "0m"
-    distLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
-    distLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    distLabel.TextStrokeTransparency = 0.3
-    distLabel.TextScaled = true
-    distLabel.Font = Enum.Font.Gotham
-    distLabel.Parent = billboard
-
-    espObjects[player] = {highlight, billboard}
-end
-
-for _, pl in pairs(Players:GetPlayers()) do
-    if pl ~= LocalPlayer then
-        task.spawn(function()
-            if pl.Character then
-                task.wait(1)
-                createESP(pl)
-            end
-        end)
-    end
-end
-
-Players.PlayerAdded:Connect(function(pl)
-    pl.CharacterAdded:Connect(function()
-        task.wait(1)
-        createESP(pl)
-    end)
-    if pl.Character then
-        task.wait(1)
-        createESP(pl)
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(pl)
-    if espObjects[pl] then
-        for _, obj in pairs(espObjects[pl]) do
-            pcall(function() obj:Destroy() end)
-        end
-        espObjects[pl] = nil
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    for pl, objs in pairs(espObjects) do
-        if pl and pl.Character and pl.Character.Parent then
-            local root = pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Torso")
-            local hum = pl.Character:FindFirstChild("Humanoid")
-            if root and hum and hum.Health > 0 then
-                if espEnabled then
-                    local dist = (Camera.CFrame.Position - root.Position).Magnitude
-                    local hp = hum.Health / hum.MaxHealth
-                    objs[1].FillColor = Color3.new(1 - hp, hp, 0)
-                    objs[1].Enabled = true
-                    objs[2].Enabled = true
-                    for _, lbl in pairs(objs[2]:GetChildren()) do
-                        if lbl:IsA("TextLabel") and lbl.Text:match("%.1fm") then
-                            lbl.Text = string.format("%.1fm", dist)
-                        end
-                    end
-                else
-                    objs[1].Enabled = false
-                    objs[2].Enabled = false
-                end
-            else
-                objs[1].Enabled = false
-                objs[2].Enabled = false
-            end
-        end
-    end
-end)
-
--- ========== ABA AIMBOT ==========
-local aimFrame = Instance.new("Frame")
-aimFrame.Size = UDim2.new(1, 0, 1, 0)
-aimFrame.BackgroundTransparency = 1
-aimFrame.Parent = container
-tabFrames["Aimbot"] = aimFrame
-
-local aimEnabled = false
-local aimBtn = createButton(aimFrame, 10, "Aimbot: OFF", nil, function()
-    aimEnabled = not aimEnabled
-    aimBtn.Text = "Aimbot: " .. (aimEnabled and "ON" or "OFF")
-    aimBtn.BackgroundColor3 = aimEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
-end)
-
-local fovLabel, fovSlider, fovButton = createSlider(aimFrame, 50, "FOV: ", 30, 300, 90, function(val)
-    fov = val
-end)
-
-local function IsEnemy(player)
-    if not LocalPlayer.Team or not player.Team then return true end
-    return LocalPlayer.Team ~= player.Team
-end
-
-RunService.RenderStepped:Connect(function()
-    if aimEnabled then
-        local closest = nil
-        local closestDist = fov
-        for _, pl in pairs(Players:GetPlayers()) do
-            if pl ~= LocalPlayer and pl.Character and pl.Character:FindFirstChild("Humanoid") and pl.Character.Humanoid.Health > 0 and IsEnemy(pl) then
-                local head = pl.Character:FindFirstChild("Head")
-                if head then
-                    local sp, onScreen = Camera:WorldToScreenPoint(head.Position)
-                    if onScreen then
-                        local mp = UserInputService:GetMouseLocation()
-                        local dist = (Vector2.new(sp.X, sp.Y) - mp).Magnitude
-                        if dist < closestDist then
-                            closestDist = dist
-                            closest = head
-                        end
-                    end
-                end
-            end
-        end
-        if closest then
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.lookAt(Camera.CFrame.Position, closest.Position), 0.3)
-        end
-    end
-end)
-
--- ========== ABA TELEPORT ==========
-local tpFrame = Instance.new("Frame")
-tpFrame.Size = UDim2.new(1, 0, 1, 0)
-tpFrame.BackgroundTransparency = 1
-tpFrame.Parent = container
-tabFrames["Teleport"] = tpFrame
-
-local selectedPlayer = nil
-local selectBtn = createButton(tpFrame, 10, "Selecionar jogador", nil, function()
-    local list = {}
-    for _, pl in pairs(Players:GetPlayers()) do
-        if pl ~= LocalPlayer then
-            table.insert(list, pl.Name)
-        end
-    end
-    if #list > 0 then
-        selectedPlayer = list[1]
-        selectBtn.Text = "Teleport: " .. selectedPlayer
-    else
-        selectedPlayer = nil
-        selectBtn.Text = "Nenhum jogador"
-    end
-end)
-
-local tpBtn = createButton(tpFrame, 50, "Ir até o jogador", Color3.fromRGB(100, 0, 255), function()
-    if selectedPlayer and Players:FindFirstChild(selectedPlayer) then
-        local target = Players[selectedPlayer]
-        if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            local targetRoot = target.Character.HumanoidRootPart
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 3, 0)
-            end
-        end
-    else
-        print("Nenhum jogador selecionado")
-    end
-end)
-
--- ========== CONTROLE DE ABAS ==========
-for i, name in ipairs(tabs) do
-    tabFrames[name].Visible = (i == 1) -- só a primeira visível
-    tabButtons[i].MouseButton1Click:Connect(function()
-        for _, f in pairs(tabFrames) do
-            f.Visible = false
-        end
-        tabFrames[name].Visible = true
-        for j, btn in ipairs(tabButtons) do
-            btn.BackgroundColor3 = (j == i) and Color3.fromRGB(80, 80, 120) or Color3.fromRGB(50, 50, 55)
-        end
+    btn.MouseButton1Click:Connect(function()
+        getgenv().SelectedCharacter = char
+        dropdownBtn.Text = char .. "  ˅"
+        dropdownList.Visible = false
     end)
 end
+dropdownList.Size = UDim2.new(0.4, 0, 0, #characters * 30 + 4)
 
-print("✅ Shinka Hub estilo Speed Hub X carregado! Minimize com o botão '−' e reabra com o botão 'ShinkaHub'.")
+dropdownBtn.MouseButton1Click:Connect(function()
+    dropdownList.Visible = not dropdownList.Visible
+end)
+
+-- Botão Equip Character
+local equipBtn = Instance.new("TextButton")
+equipBtn.Size = UDim2.new(0.5, -5, 0, 30)
+equipBtn.Position = UDim2.new(0.5, 5, 0, 40)
+equipBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 100)
+equipBtn.Text = "Equip Character"
+equipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+equipBtn.Font = Enum.Font.GothamBold
+equipBtn.TextSize = 13
+equipBtn.Parent = charContent
+createCorner(equipBtn, 6)
+createStroke(equipBtn, 1, Color3.fromRGB(100, 100, 150))
+
+equipBtn.MouseButton1Click:Connect(function()
+    print("Equipando personagem:", getgenv().SelectedCharacter)
+    -- Aqui você coloca a lógica de equipar
+end)
+
+-- Seção Safe Mode
+local safeSection, safeContent = createSection(farmingPage, "Safe Mode")
+safeSection.Size = UDim2.new(1, 0, 0, 150)
+
+createToggle(safeContent, "SafeModeToggle", "Auto To Safe Mode At Health", false)
+createSlider(safeContent, "SafeModeHealth", "Health", 1, 100, 50, Color3.fromRGB(200, 50, 50))
+createSlider(safeContent, "SafeModeBackHealth", "Until Health To Back", 1, 100, 69, Color3.fromRGB(200, 50, 50))
+
+-- ========== Conteúdos das outras abas (placeholders) ==========
+for name, page in pairs(pages) do
+    if name ~= "Farming" then
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(1, 0, 0, 50)
+        lbl.Position = UDim2.new(0, 10, 0, 10)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = "Conteúdo da aba " .. name .. "\n(Placeholder)"
+        lbl.TextColor3 = Color3.fromRGB(150, 150, 200)
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 18
+        lbl.TextWrapped = true
+        lbl.Parent = page
+    end
+end
+
+-- ========== Funcionalidade de Minimizar ==========
+local isMinimized = false
+local originalSize = mainFrame.Size
+local originalContentTransparency = mainContentContainer.BackgroundTransparency
+
+minButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        -- Minimizar: esconder conteúdo e ajustar tamanho
+        tweenObject(mainContentContainer, {BackgroundTransparency = 1}, 0.2)
+        for _, child in ipairs(mainContentContainer:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                tweenObject(child, {BackgroundTransparency = 1}, 0.2)
+            end
+        end
+        tweenObject(mainFrame, {Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, 35)}, 0.3)
+    else
+        -- Maximizar: restaurar tamanho e mostrar conteúdo
+        tweenObject(mainContentContainer, {BackgroundTransparency = 0}, 0.2)
+        for _, child in ipairs(mainContentContainer:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                tweenObject(child, {BackgroundTransparency = 0}, 0.2)
+            end
+        end
+        tweenObject(mainFrame, {Size = UDim2.new(0, 600, 0, 400)}, 0.3)
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- ========== Arrastar a GUI ==========
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        updateDrag(input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- ========== Heartbeat Loop (Anti-wait) ==========
+RunService.Heartbeat:Connect(function()
+    -- Aqui você coloca a lógica dos toggles ativos
+    if getgenv().AutoVoid then
+        -- Exemplo: if player está no void então faz algo
+        -- print("Auto Void ativo")
+    end
+    if getgenv().AutoBlock then
+        -- Lógica do Auto Block
+    end
+    if getgenv().AntiSlow then
+        -- Lógica do Anti-Slow
+    end
+    if getgenv().SafeModeToggle then
+        -- Lógica do Safe Mode com base nos sliders
+        local health = Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health or 0
+        if health <= getgenv().SafeModeHealth then
+            -- Ativar modo seguro
+        elseif health >= getgenv().SafeModeBackHealth then
+            -- Desativar modo seguro
+        end
+    end
+end)
+
+-- Aviso final
+print("Speed Hub X v3.7.0 carregado com sucesso!")
