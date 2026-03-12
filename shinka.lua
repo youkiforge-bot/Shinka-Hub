@@ -11,7 +11,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "ShinkaHub"
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Janela principal (altura aumentada para caber tudo)
+-- Janela principal
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 500)
 frame.Position = UDim2.new(0.5, -150, 0.5, -250)
@@ -30,12 +30,12 @@ titulo.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
 titulo.Parent = frame
 Instance.new("UICorner", titulo).CornerRadius = UDim.new(0, 8)
 
--- Área de conteúdo (com rolagem, se necessário)
+-- Área de conteúdo com rolagem
 local area = Instance.new("ScrollingFrame")
 area.Size = UDim2.new(1, -20, 1, -40)
 area.Position = UDim2.new(0, 10, 0, 35)
 area.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-area.CanvasSize = UDim2.new(0, 0, 0, 700) -- Altura maior que a área para rolagem
+area.CanvasSize = UDim2.new(0, 0, 0, 700)
 area.ScrollBarThickness = 6
 area.Parent = frame
 Instance.new("UICorner", area).CornerRadius = UDim.new(0, 6)
@@ -88,10 +88,10 @@ speedButton.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
     speedButton.Text = "Speed: " .. (speedEnabled and "ON" or "OFF")
     speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 100, 50) or Color3.fromRGB(60, 60, 70)
-    
+
     speedText.Visible = speedEnabled
     slider.Visible = speedEnabled
-    
+
     if not speedEnabled then
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = 16
@@ -261,22 +261,18 @@ Instance.new("UICorner", espButton).CornerRadius = UDim.new(0, 6)
 -- Variáveis do ESP
 local espObjects = {}
 
--- Função para criar ESP em um jogador
 local function createESP(player)
     if player == LocalPlayer or not player.Character then return end
-    
     local character = player.Character
     local rootPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso")
     if not rootPart then return end
-    
-    -- Remove ESP antigo se existir
+
     if espObjects[player] then
         for _, obj in pairs(espObjects[player]) do
             pcall(function() obj:Destroy() end)
         end
     end
-    
-    -- Criar Highlight (contorno)
+
     local highlight = Instance.new("Highlight")
     highlight.Name = "MeuESP"
     highlight.FillColor = Color3.fromRGB(255, 0, 0)
@@ -284,15 +280,14 @@ local function createESP(player)
     highlight.OutlineColor = Color3.new(1, 1, 1)
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.Parent = character
-    
-    -- Criar BillboardGui (nome e distância)
+
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "MeuESP_Text"
     billboard.AlwaysOnTop = true
     billboard.Size = UDim2.new(0, 200, 0, 50)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.Parent = rootPart
-    
+
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(1, 0, 0.6, 0)
     nameLabel.BackgroundTransparency = 1
@@ -303,7 +298,7 @@ local function createESP(player)
     nameLabel.TextScaled = true
     nameLabel.Font = Enum.Font.GothamBold
     nameLabel.Parent = billboard
-    
+
     local distLabel = Instance.new("TextLabel")
     distLabel.Size = UDim2.new(1, 0, 0.4, 0)
     distLabel.Position = UDim2.new(0, 0, 0.6, 0)
@@ -315,11 +310,10 @@ local function createESP(player)
     distLabel.TextScaled = true
     distLabel.Font = Enum.Font.Gotham
     distLabel.Parent = billboard
-    
+
     espObjects[player] = {highlight, billboard}
 end
 
--- Criar ESP para jogadores existentes
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         task.spawn(function()
@@ -331,7 +325,6 @@ for _, player in pairs(Players:GetPlayers()) do
     end
 end
 
--- Eventos de jogadores
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function()
         task.wait(1)
@@ -352,13 +345,11 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Atualizar ESP
 RunService.RenderStepped:Connect(function()
     for player, objects in pairs(espObjects) do
         if player and player.Character and player.Character.Parent then
             local rootPart = player.Character:FindFirstChild("HumanoidRootPart") or player.Character:FindFirstChild("Torso")
             local humanoid = player.Character:FindFirstChild("Humanoid")
-            
             if rootPart and humanoid and humanoid.Health > 0 then
                 if espEnabled then
                     local dist = (Camera.CFrame.Position - rootPart.Position).Magnitude
@@ -402,7 +393,6 @@ aimbotButton.TextSize = 16
 aimbotButton.Parent = area
 Instance.new("UICorner", aimbotButton).CornerRadius = UDim.new(0, 6)
 
--- Slider de FOV
 local fovText = Instance.new("TextLabel")
 fovText.Size = UDim2.new(0.9, 0, 0, 25)
 fovText.Position = UDim2.new(0.05, 0, 0, 310)
@@ -510,7 +500,6 @@ local selectedPlayer = nil
 local playerList = {}
 
 teleportButton.MouseButton1Click:Connect(function()
-    -- Atualiza lista de jogadores
     playerList = {}
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
@@ -518,7 +507,6 @@ teleportButton.MouseButton1Click:Connect(function()
         end
     end
     if #playerList > 0 then
-        -- Simples: escolhe o primeiro da lista (poderia ser melhorado com um dropdown)
         selectedPlayer = playerList[1]
         teleportButton.Text = "Teleport: " .. selectedPlayer
     else
@@ -529,4 +517,27 @@ end)
 
 local teleportAction = Instance.new("TextButton")
 teleportAction.Size = UDim2.new(0.9, 0, 0, 35)
-teleportAction.Position = UDim2.new(0.05,
+teleportAction.Position = UDim2.new(0.05, 0, 0, 425)
+teleportAction.BackgroundColor3 = Color3.fromRGB(100, 0, 255)
+teleportAction.Text = "Ir até o jogador"
+teleportAction.TextColor3 = Color3.new(1, 1, 1)
+teleportAction.Font = Enum.Font.GothamSemibold
+teleportAction.TextSize = 16
+teleportAction.Parent = area
+Instance.new("UICorner", teleportAction).CornerRadius = UDim.new(0, 6)
+
+teleportAction.MouseButton1Click:Connect(function()
+    if selectedPlayer and Players:FindFirstChild(selectedPlayer) then
+        local target = Players[selectedPlayer]
+        if target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local targetRoot = target.Character.HumanoidRootPart
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 3, 0)
+            end
+        end
+    else
+        print("Nenhum jogador selecionado")
+    end
+end)
+
+print("✅ Script completo com Aimbot e Teleporte carregado!")
