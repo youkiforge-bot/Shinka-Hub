@@ -1,40 +1,26 @@
--- ============================================
--- PARTE 1/4: Speed Hub X | Version 3.7.0
--- Serviços, Variáveis Globais e Funções Auxiliares
--- ============================================
+-- ============================================================================
+-- SPEED HUB X - PARTE 1/2 (ESTRUTURA PRINCIPAL)
+-- ============================================================================
 
--- ========== Serviços ==========
+-- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
--- ========== Variáveis Globais (getgenv) ==========
+-- Variáveis Globais (getgenv)
 getgenv().AutoVoid = false
 getgenv().AutoBlock = false
 getgenv().AntiSlow = false
 getgenv().SafeModeToggle = false
 getgenv().SafeModeHealth = 50
 getgenv().SafeModeBackHealth = 69
-getgenv().SelectedCharacter = "Bald"  -- para o dropdown
+getgenv().SelectedCharacter = "Bald"
 
--- ========== Configurações de UI ==========
 local Player = Players.LocalPlayer
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SpeedHubX_GUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Se já existir, destroi para recriar
-for _, v in ipairs(CoreGui:GetChildren()) do
-    if v.Name == "SpeedHubX_GUI" then
-        v:Destroy()
-    end
-end
-ScreenGui.Parent = CoreGui
-
--- ========== Funções Auxiliares ==========
+-- Funções Auxiliares de UI
 local function createGradient(parent, color1, color2, rotation)
     local gradient = Instance.new("UIGradient")
     gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)})
@@ -66,7 +52,19 @@ local function tweenObject(obj, props, time, easing)
     return tween
 end
 
--- ========== Frame Principal ==========
+-- Criação da ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpeedHubX_GUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+for _, v in ipairs(CoreGui:GetChildren()) do
+    if v.Name == "SpeedHubX_GUI" then
+        v:Destroy()
+    end
+end
+ScreenGui.Parent = CoreGui
+
+-- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 600, 0, 400)
@@ -74,38 +72,30 @@ mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = ScreenGui
-
 createCorner(mainFrame, 12)
 createStroke(mainFrame, 2, Color3.fromRGB(40, 40, 60))
 
--- Sombra suave (imagem de sombra)
+-- Sombra
 local shadow = Instance.new("ImageLabel")
 shadow.Name = "Shadow"
 shadow.Size = UDim2.new(1, 20, 1, 20)
 shadow.Position = UDim2.new(0, -10, 0, -10)
 shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://6015897843" -- sombra arredondada
+shadow.Image = "rbxassetid://6015897843"
 shadow.ImageColor3 = Color3.new(0, 0, 0)
 shadow.ImageTransparency = 0.7
 shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 shadow.Parent = mainFrame
+createGradient(mainFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)
 
--- Gradient de fundo sutil
-createGradient(mainFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)-- ============================================
--- PARTE 2/4: Speed Hub X | Version 3.7.0
--- Barra de Título, Abas Laterais e Estrutura de Páginas
--- ============================================
-
--- ========== Barra de Título ==========
+-- Barra de Título
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleBar.Parent = mainFrame
 createCorner(titleBar, 12)
--- Só arredondar em cima
-titleBar.Corner.CornerRadius = UDim.new(0, 12) -- será ajustado depois com um canvas group? melhor deixar assim.
 
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
@@ -119,7 +109,7 @@ titleLabel.TextSize = 16
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- Botões de controle
+-- Botões de controle (fechar e minimizar)
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 30, 0, 30)
@@ -158,7 +148,7 @@ end
 hoverEffect(closeButton, Color3.fromRGB(70, 70, 90))
 hoverEffect(minButton, Color3.fromRGB(70, 70, 90))
 
--- ========== Container Principal (abaixo da barra de título) ==========
+-- Container do conteúdo principal (abaixo da barra)
 local mainContentContainer = Instance.new("Frame")
 mainContentContainer.Name = "MainContentContainer"
 mainContentContainer.Size = UDim2.new(1, 0, 1, -35)
@@ -166,7 +156,7 @@ mainContentContainer.Position = UDim2.new(0, 0, 0, 35)
 mainContentContainer.BackgroundTransparency = 1
 mainContentContainer.Parent = mainFrame
 
--- ========== Abas Laterais (ScrollingFrame) ==========
+-- Painel de abas (ScrollingFrame vertical)
 local tabsPanel = Instance.new("ScrollingFrame")
 tabsPanel.Name = "TabsPanel"
 tabsPanel.Size = UDim2.new(0, 120, 1, -10)
@@ -178,14 +168,13 @@ tabsPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
 tabsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
 tabsPanel.Parent = mainContentContainer
 
--- Layout automático vertical
 local tabsLayout = Instance.new("UIListLayout")
 tabsLayout.Padding = UDim.new(0, 6)
 tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Dados das abas: Nome, Ícone (emoji), Ordem
+-- Dados das abas
 local tabsData = {
     {name = "Home", icon = "🏠", order = 1},
     {name = "Main", icon = "⚙️", order = 2},
@@ -195,9 +184,9 @@ local tabsData = {
 }
 
 local tabButtons = {}
-local selectedTab = "Farming" -- padrão
+local selectedTab = "Farming"
 
--- ========== Área de Conteúdo Principal ==========
+-- Área de conteúdo (onde as páginas aparecem)
 local contentArea = Instance.new("Frame")
 contentArea.Name = "ContentArea"
 contentArea.Size = UDim2.new(1, -135, 1, -10)
@@ -207,7 +196,7 @@ contentArea.Parent = mainContentContainer
 createCorner(contentArea, 10)
 createStroke(contentArea, 1, Color3.fromRGB(50, 50, 70))
 
--- Criar páginas para cada aba
+-- Páginas (uma por aba)
 local pages = {}
 for _, tab in ipairs(tabsData) do
     local page = Instance.new("Frame")
@@ -218,12 +207,15 @@ for _, tab in ipairs(tabsData) do
     page.Visible = (tab.name == selectedTab)
     page.Parent = contentArea
     pages[tab.name] = page
-end-- ============================================
--- PARTE 3/4: Speed Hub X | Version 3.7.0
--- Construção das Abas e Conteúdo da Aba Farming
--- ============================================
+end
 
--- ========== Construir Abas ==========
+-- ============================================================================
+-- FIM DA PARTE 1/2
+-- ============================================================================-- ============================================================================
+-- SPEED HUB X - PARTE 2/2 (ABAS, CONTEÚDO, MINIMIZAR E FUNÇÕES)
+-- ============================================================================
+
+-- ========== CONSTRUÇÃO DAS ABAS ==========
 local function createTabButton(tab)
     local btn = Instance.new("TextButton")
     btn.Name = tab.name .. "Tab"
@@ -237,7 +229,6 @@ local function createTabButton(tab)
     createCorner(btn, 8)
     createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
 
-    -- Efeito hover (menos intenso que selecionado)
     btn.MouseEnter:Connect(function()
         if selectedTab ~= tab.name then
             tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}, 0.15)
@@ -253,14 +244,11 @@ local function createTabButton(tab)
 
     btn.MouseButton1Click:Connect(function()
         if selectedTab == tab.name then return end
-        -- Atualizar visual da aba anterior
         if tabButtons[selectedTab] then
             tweenObject(tabButtons[selectedTab], {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}, 0.2)
         end
-        -- Nova aba
         selectedTab = tab.name
         tweenObject(btn, {BackgroundColor3 = tab.highlightColor or Color3.fromRGB(60, 60, 100)}, 0.2)
-        -- Mostrar página correspondente
         for name, page in pairs(pages) do
             page.Visible = (name == selectedTab)
         end
@@ -272,15 +260,10 @@ end
 for _, tab in ipairs(tabsData) do
     createTabButton(tab)
 end
-
--- Ajustar canvas do ScrollingFrame após criar todos
 tabsPanel.CanvasSize = UDim2.new(0, 0, 0, tabsLayout.AbsoluteContentSize.Y + 10)
 
--- ========== Conteúdo da aba FARMING ==========
-local farmingPage = pages["Farming"]
-
--- Função para criar toggle (switch)
-local function createToggle(parent, name, label, default, callback)
+-- ========== FUNÇÕES PARA CRIAR ELEMENTOS NAS PÁGINAS ==========
+local function createToggle(parent, name, label, default)
     local container = Instance.new("Frame")
     container.Name = name .. "Container"
     container.Size = UDim2.new(1, -10, 0, 35)
@@ -288,7 +271,6 @@ local function createToggle(parent, name, label, default, callback)
     container.Parent = parent
 
     local labelObj = Instance.new("TextLabel")
-    labelObj.Name = "Label"
     labelObj.Size = UDim2.new(0.7, -5, 1, 0)
     labelObj.Position = UDim2.new(0, 0, 0, 0)
     labelObj.BackgroundTransparency = 1
@@ -334,14 +316,12 @@ local function createToggle(parent, name, label, default, callback)
             state = not state
             getgenv()[name] = state
             updateVisual()
-            if callback then callback(state) end
         end
     end)
 
     return container
 end
 
--- Função para criar slider
 local function createSlider(parent, name, label, min, max, default, color)
     local container = Instance.new("Frame")
     container.Name = name .. "SliderContainer"
@@ -404,7 +384,7 @@ local function createSlider(parent, name, label, min, max, default, color)
         local pos = input.Position.X - sliderBg.AbsolutePosition.X
         local percent = math.clamp(pos / sliderBg.AbsoluteSize.X, 0, 1)
         value = min + (max - min) * percent
-        value = math.floor(value + 0.5) -- inteiro
+        value = math.floor(value + 0.5)
         fill.Size = UDim2.new(percent, 0, 1, 0)
         thumb.Position = UDim2.new(percent, -6, 0.5, -6)
         valueLabel.Text = tostring(value)
@@ -430,12 +410,102 @@ local function createSlider(parent, name, label, min, max, default, color)
     end)
 
     return container
-    end-- ============================================
--- PARTE 4/4: Speed Hub X | Version 3.7.0
--- Seções, Dropdown, Minimizar, Arrastar e Heartbeat
--- ============================================
+end
 
--- Função para criar seção com título
+local function createSection(parent, title)
+    local section = Instance.new("Frame")
+    section.Name = title .. "Section"
+    section.Size = UDim2.new(1, 0, 0, 0)
+    section.BackgroundTransparency = 1
+    section.Parent = parent
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -10, 0, 25)
+    titleLabel.Position = UDim2.new(0, 5, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 16
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = section
+
+    local line = Instance.new("Frame")
+    line.Size = UDim2.new(1, -10, 0, 2)
+    line.Position = UDim2.new(0, 5, 0, 25)
+    line.BackgroundColor3 = Color3.fromRGB(70, 70, 100)
+    line.Parent = section
+    createCorner(line, 1)
+
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Size = UDim2.new(1, -10, 1, -35)
+    content.Position = UDim2.new(0, 5, 0, 30)
+    content.BackgroundTransparency = 1
+    content.Parent = section
+
+    return section, content
+end
+
+local function createActionButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 14
+    btn.Parent = parent
+    createCorner(btn, 8)
+    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
+    
+    btn.MouseButton1Click:Connect(callback)
+    
+    btn.MouseEnter:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
+    end)
+    
+    return btn
+end
+
+-- ========== CONTEÚDO DA ABA FARMING (já existente) ==========
+local farmingPage = pages["Farming"]
+local pageLayout = Instance.new("UIListLayout")
+pageLayout.Padding = UDim.new(0, 15)
+pageLayout.FillDirection = Enum.FillDirection.Vertical
+pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+pageLayout.Parent = farmingPage
+
+-- Seção Player
+local playerSection, playerContent = createSection(farmingPage, "Player")
+playerSection.Size = UDim2.new(1, 0, 0, 130)
+createToggle(playerContent, "AutoVoid", "Auto Void", false)
+createToggle(playerContent, "AutoBlock", "Auto Block", false)
+createToggle(playerContent, "AntiSlow", "Anti-Slow", false)
+
+-- Seção Character
+local charSection, charContent = createSection(farmingPage, "Character")
+charSection.Size = UDim2.new(1, 0, 0, 90)
+
+-- Dropdown de personagem
+local dropdownContainer = Instance.new("Frame")
+dropdownContainer.Size = UDim2.new(1, 0, 0, 35)
+dropdownContainer.BackgroundTransparency = 1
+dropdownContainer.Parent = charContent
+
+local dropdownLabel = Instance.new("TextLabel")
+dropdownLabel.Size = UDim2.new(0.5, 0, 1, 0)
+dropdownLabel.BackgroundTransparency = 1
+dropdownLabel.Text = "Choose Equip Character"
+dropdownLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+dropdownLabel.Font = Enum.Font.Gotham
+dropdownLabel.TextSize = 13
+dropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+dropdownLabel.Parent = dropdownContainer
 
 local dropdownBtn = Instance.new("TextButton")
 dropdownBtn.Size = UDim2.new(0.4, -5, 0, 30)
@@ -449,7 +519,6 @@ dropdownBtn.Parent = dropdownContainer
 createCorner(dropdownBtn, 6)
 createStroke(dropdownBtn, 1, Color3.fromRGB(70, 70, 100))
 
--- Simular dropdown ao clicar (abre uma lista simples)
 local dropdownList = Instance.new("Frame")
 dropdownList.Name = "DropdownList"
 dropdownList.Size = UDim2.new(0.4, 0, 0, 0)
@@ -486,7 +555,6 @@ dropdownBtn.MouseButton1Click:Connect(function()
     dropdownList.Visible = not dropdownList.Visible
 end)
 
--- Botão Equip Character
 local equipBtn = Instance.new("TextButton")
 equipBtn.Size = UDim2.new(0.5, -5, 0, 30)
 equipBtn.Position = UDim2.new(0.5, 5, 0, 40)
@@ -501,20 +569,50 @@ createStroke(equipBtn, 1, Color3.fromRGB(100, 100, 150))
 
 equipBtn.MouseButton1Click:Connect(function()
     print("Equipando personagem:", getgenv().SelectedCharacter)
-    -- Aqui você coloca a lógica de equipar
 end)
 
 -- Seção Safe Mode
 local safeSection, safeContent = createSection(farmingPage, "Safe Mode")
 safeSection.Size = UDim2.new(1, 0, 0, 150)
-
 createToggle(safeContent, "SafeModeToggle", "Auto To Safe Mode At Health", false)
 createSlider(safeContent, "SafeModeHealth", "Health", 1, 100, 50, Color3.fromRGB(200, 50, 50))
 createSlider(safeContent, "SafeModeBackHealth", "Until Health To Back", 1, 100, 69, Color3.fromRGB(200, 50, 50))
 
--- ========== Conteúdos das outras abas (placeholders) ==========
+-- ========== CONTEÚDO DA ABA MAIN (COM FAMÍLIA) ==========
+local mainPage = pages["Main"]
+for _, child in ipairs(mainPage:GetChildren()) do
+    child:Destroy()
+end
+local mainPageLayout = Instance.new("UIListLayout")
+mainPageLayout.Padding = UDim.new(0, 15)
+mainPageLayout.FillDirection = Enum.FillDirection.Vertical
+mainPageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+mainPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+mainPageLayout.Parent = mainPage
+
+-- Seção Família
+local familiaSection, familiaContent = createSection(mainPage, "Família")
+familiaSection.Size = UDim2.new(1, 0, 0, 280)
+
+local familiaItens = {
+    {nome = "Personagem", icone = "🧑"},
+    {nome = "Editor de Personagem", icone = "✏️"},
+    {nome = "Ferramentas", icone = "🔧"},
+    {nome = "Animações", icone = "🎬"},
+    {nome = "Veículo", icone = "🚗"},
+    {nome = "Casa", icone = "🏠"},
+}
+
+for _, item in ipairs(familiaItens) do
+    createActionButton(familiaContent, item.icone .. "  " .. item.nome, function()
+        print("Ação: " .. item.nome .. " selecionado")
+        -- Adicione aqui a lógica desejada para cada item
+    end)
+end
+
+-- ========== PLACEHOLDERS PARA OUTRAS ABAS ==========
 for name, page in pairs(pages) do
-    if name ~= "Farming" then
+    if name ~= "Farming" and name ~= "Main" then
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.new(1, 0, 0, 50)
         lbl.Position = UDim2.new(0, 10, 0, 10)
@@ -528,46 +626,97 @@ for name, page in pairs(pages) do
     end
 end
 
--- ========== Funcionalidade de Minimizar ==========
-local isMinimized = false
-local originalSize = mainFrame.Size
-local originalContentTransparency = mainContentContainer.BackgroundTransparency
+-- ========== FUNCIONALIDADE DE MINIMIZAR (COM VERSÃO REDUZIDA) ==========
+local minimizedFrame = Instance.new("Frame")
+minimizedFrame.Name = "MinimizedFrame"
+minimizedFrame.Size = UDim2.new(0, 200, 0, 40)
+minimizedFrame.Position = mainFrame.Position
+minimizedFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+minimizedFrame.Visible = false
+minimizedFrame.Parent = ScreenGui
+createCorner(minimizedFrame, 8)
+createStroke(minimizedFrame, 2, Color3.fromRGB(40, 40, 60))
+createGradient(minimizedFrame, Color3.fromRGB(25, 25, 35), Color3.fromRGB(15, 15, 22), 45)
 
-minButton.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    if isMinimized then
-        -- Minimizar: esconder conteúdo e ajustar tamanho
-        tweenObject(mainContentContainer, {BackgroundTransparency = 1}, 0.2)
-        for _, child in ipairs(mainContentContainer:GetChildren()) do
-            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
-                tweenObject(child, {BackgroundTransparency = 1}, 0.2)
-            end
-        end
-        tweenObject(mainFrame, {Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, 35)}, 0.3)
-    else
-        -- Maximizar: restaurar tamanho e mostrar conteúdo
-        tweenObject(mainContentContainer, {BackgroundTransparency = 0}, 0.2)
-        for _, child in ipairs(mainContentContainer:GetChildren()) do
-            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
-                tweenObject(child, {BackgroundTransparency = 0}, 0.2)
-            end
-        end
-        tweenObject(mainFrame, {Size = UDim2.new(0, 600, 0, 400)}, 0.3)
+local minimizedLabel = Instance.new("TextLabel")
+minimizedLabel.Size = UDim2.new(1, -40, 1, 0)
+minimizedLabel.Position = UDim2.new(0, 10, 0, 0)
+minimizedLabel.BackgroundTransparency = 1
+minimizedLabel.Text = "Speed Hub X"
+minimizedLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
+minimizedLabel.Font = Enum.Font.GothamBold
+minimizedLabel.TextSize = 14
+minimizedLabel.TextXAlignment = Enum.TextXAlignment.Left
+minimizedLabel.Parent = minimizedFrame
+
+local restoreButton = Instance.new("TextButton")
+restoreButton.Name = "RestoreButton"
+restoreButton.Size = UDim2.new(0, 30, 0, 30)
+restoreButton.Position = UDim2.new(1, -35, 0.5, -15)
+restoreButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+restoreButton.Text = "⬆"
+restoreButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+restoreButton.Font = Enum.Font.GothamBold
+restoreButton.TextSize = 16
+restoreButton.Parent = minimizedFrame
+createCorner(restoreButton, 6)
+createStroke(restoreButton, 1, Color3.fromRGB(80, 80, 100))
+hoverEffect(restoreButton, Color3.fromRGB(70, 70, 90))
+
+-- Arrastar a versão minimizada
+local minimizedDragging = false
+local minimizedDragStart, minimizedStartPos
+
+minimizedFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        minimizedDragging = true
+        minimizedDragStart = input.Position
+        minimizedStartPos = minimizedFrame.Position
     end
 end)
+
+minimizedFrame.InputChanged:Connect(function(input)
+    if minimizedDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - minimizedDragStart
+        minimizedFrame.Position = UDim2.new(minimizedStartPos.X.Scale, minimizedStartPos.X.Offset + delta.X, minimizedStartPos.Y.Scale, minimizedStartPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        minimizedDragging = false
+    end
+end)
+
+-- Estado de minimizado
+local isMinimized = false
+
+local function minimize()
+    isMinimized = true
+    mainFrame.Visible = false
+    minimizedFrame.Visible = true
+    -- Sincroniza a posição do minimizado com a posição atual do mainFrame
+    minimizedFrame.Position = mainFrame.Position
+end
+
+local function maximize()
+    isMinimized = false
+    mainFrame.Visible = true
+    minimizedFrame.Visible = false
+    -- Restaura a posição do mainFrame para onde o minimizado estava (opcional)
+    mainFrame.Position = minimizedFrame.Position
+end
+
+minButton.MouseButton1Click:Connect(minimize)
+restoreButton.MouseButton1Click:Connect(maximize)
 
 closeButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- ========== Arrastar a GUI ==========
+-- Arrastar a GUI principal (já existente)
 local dragging = false
-local dragInput, dragStart, startPos
-
-local function updateDrag(input)
-    local delta = input.Position - dragStart
-    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
+local dragStart, startPos
 
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -578,8 +727,9 @@ titleBar.InputBegan:Connect(function(input)
 end)
 
 titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        updateDrag(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
@@ -589,12 +739,10 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- ========== Heartbeat Loop (Anti-wait) ==========
+-- ========== HEARTBEAT LOOP (FUNÇÕES SEMPRE ATIVAS) ==========
 RunService.Heartbeat:Connect(function()
-    -- Aqui você coloca a lógica dos toggles ativos
     if getgenv().AutoVoid then
-        -- Exemplo: if player está no void então faz algo
-        -- print("Auto Void ativo")
+        -- Lógica do Auto Void
     end
     if getgenv().AutoBlock then
         -- Lógica do Auto Block
@@ -603,7 +751,6 @@ RunService.Heartbeat:Connect(function()
         -- Lógica do Anti-Slow
     end
     if getgenv().SafeModeToggle then
-        -- Lógica do Safe Mode com base nos sliders
         local health = Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid.Health or 0
         if health <= getgenv().SafeModeHealth then
             -- Ativar modo seguro
@@ -613,5 +760,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Aviso final
-print("Speed Hub X v3.7.0 carregado com sucesso!")
+print("Speed Hub X v3.7.0 carregado com sucesso! (Versão com minimizar)")
+-- ============================================================================
+-- FIM DA PARTE 2/2
+-- ============================================================================
