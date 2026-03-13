@@ -1,5 +1,5 @@
 -- ===================================================================
--- SHINKA HUB - VOLLEYBALL LEGENDS (VERSÃO FUNCIONAL)
+-- SHINKA HUB - BROOKHAVEN (FUNÇÕES TROLL)
 -- PARTE 1/4 – ESTRUTURA PRINCIPAL E GUI
 -- ===================================================================
 
@@ -14,28 +14,26 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 
 -- Variáveis Globais
-getgenv().BallHitbox = false
-getgenv().BallHitboxSize = 2
-getgenv().BallHitboxColor = Color3.fromRGB(255, 0, 0)
-getgenv().AutoStrongServe = false
-getgenv().JumpESP = false
-getgenv().JumpESPColor = Color3.fromRGB(0, 255, 0)
-getgenv().PredictAim = false
-getgenv().PredictionLength = 5
-getgenv().PredictAimColor = Color3.fromRGB(0, 255, 255)
-getgenv().AutoSpike = false
-getgenv().AutoBlock = false
-getgenv().AutoDive = false
+getgenv().Fly = false
+getgenv().FlySpeed = 50
+getgenv().Speed = 16
+getgenv().JumpPower = 50
+getgenv().Invisible = false
+getgenv().NoClip = false
+getgenv().FreezeOthers = false
+getgenv().SitOthers = false
+getgenv().ExplodeCars = false
+getgenv().TrollTarget = nil
 
 local Player = Players.LocalPlayer
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ShinkaHub_VL"
+ScreenGui.Name = "ShinkaHub_Brookhaven"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Destroi GUI antiga
 for _, v in ipairs(CoreGui:GetChildren()) do
-    if v.Name == "ShinkaHub_VL" then
+    if v.Name == "ShinkaHub_Brookhaven" then
         v:Destroy()
     end
 end
@@ -111,7 +109,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.5, -50, 1, 0)
 titleLabel.Position = UDim2.new(0, 15, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Shinka Hub | Volleyball Legends"
+titleLabel.Text = "Shinka Hub | Brookhaven (Troll)"
 titleLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 18
@@ -164,7 +162,7 @@ mainContentContainer.Position = UDim2.new(0, 0, 0, 45)
 mainContentContainer.BackgroundTransparency = 1
 mainContentContainer.Parent = mainFrame
 
--- Sistema de minimizar (versão reduzida)
+-- Sistema de minimizar
 local minimizedFrame = Instance.new("Frame")
 minimizedFrame.Name = "MinimizedFrame"
 minimizedFrame.Size = UDim2.new(0, 280, 0, 50)
@@ -180,7 +178,7 @@ local minimizedLabel = Instance.new("TextLabel")
 minimizedLabel.Size = UDim2.new(1, -50, 1, 0)
 minimizedLabel.Position = UDim2.new(0, 10, 0, 0)
 minimizedLabel.BackgroundTransparency = 1
-minimizedLabel.Text = "Shinka Hub - Ativo"
+minimizedLabel.Text = "Shinka Hub - Brookhaven"
 minimizedLabel.TextColor3 = Color3.fromRGB(220, 220, 240)
 minimizedLabel.Font = Enum.Font.GothamBold
 minimizedLabel.TextSize = 16
@@ -293,18 +291,16 @@ tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabsPanel
 
--- Abas (incluindo as que você mencionou)
+-- Abas
 local tabsData = {
-    {name = "Predict", icon = "🔮", order = 1, highlightColor = Color3.fromRGB(255, 255, 0)},
-    {name = "Serve", icon = "💪", order = 2, highlightColor = Color3.fromRGB(100, 255, 100)},
-    {name = "JumpESP", icon = "👆", order = 3, highlightColor = Color3.fromRGB(100, 100, 255)},
-    {name = "Hitbox", icon = "🎯", order = 4, highlightColor = Color3.fromRGB(255, 100, 100)},
-    {name = "Actions", icon = "⚡", order = 5, highlightColor = Color3.fromRGB(255, 150, 0)},
-    {name = "Credits", icon = "📜", order = 6, highlightColor = Color3.fromRGB(200, 100, 255)},
+    {name = "Troll", icon = "👹", order = 1, highlightColor = Color3.fromRGB(255, 100, 100)},
+    {name = "Player", icon = "🧑", order = 2, highlightColor = Color3.fromRGB(100, 255, 100)},
+    {name = "Vehicles", icon = "🚗", order = 3, highlightColor = Color3.fromRGB(100, 100, 255)},
+    {name = "Credits", icon = "📜", order = 4, highlightColor = Color3.fromRGB(200, 100, 255)},
 }
 
 local tabButtons = {}
-local selectedTab = "Hitbox"
+local selectedTab = "Troll"
 
 -- Área de conteúdo
 local contentArea = Instance.new("Frame")
@@ -542,99 +538,29 @@ local function createSlider(parent, name, label, min, max, default, suffix)
     return container
 end
 
--- Color Picker simplificado
-local function createColorPicker(parent, name, label, defaultColor)
-    local container = Instance.new("Frame")
-    container.Name = name .. "ColorContainer"
-    container.Size = UDim2.new(1, -10, 0, 50)
-    container.BackgroundTransparency = 1
-    container.Parent = parent
+-- Botão de ação
+local function createButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 45)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = parent
+    createCorner(btn, 8)
+    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
 
-    local labelObj = Instance.new("TextLabel")
-    labelObj.Size = UDim2.new(0.6, -5, 1, 0)
-    labelObj.Position = UDim2.new(0, 0, 0, 0)
-    labelObj.BackgroundTransparency = 1
-    labelObj.Text = label
-    labelObj.TextColor3 = Color3.fromRGB(220, 220, 240)
-    labelObj.Font = Enum.Font.Gotham
-    labelObj.TextSize = 15
-    labelObj.TextXAlignment = Enum.TextXAlignment.Left
-    labelObj.Parent = container
+    btn.MouseButton1Click:Connect(callback)
 
-    local colorDisplay = Instance.new("Frame")
-    colorDisplay.Name = "ColorDisplay"
-    colorDisplay.Size = UDim2.new(0, 40, 0, 30)
-    colorDisplay.Position = UDim2.new(1, -50, 0.5, -15)
-    colorDisplay.BackgroundColor3 = defaultColor
-    colorDisplay.Parent = container
-    createCorner(colorDisplay, 6)
-    createStroke(colorDisplay, 1, Color3.fromRGB(80, 80, 100))
-
-    local pickerButton = Instance.new("TextButton")
-    pickerButton.Size = UDim2.new(1, 0, 1, 0)
-    pickerButton.BackgroundTransparency = 1
-    pickerButton.Text = ""
-    pickerButton.Parent = colorDisplay
-
-    pickerButton.MouseButton1Click:Connect(function()
-        local menu = Instance.new("Frame")
-        menu.Size = UDim2.new(0, 200, 0, 200)
-        menu.Position = UDim2.new(0.5, -100, 0.5, -100)
-        menu.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        menu.Parent = ScreenGui
-        createCorner(menu, 8)
-        createStroke(menu, 1, Color3.fromRGB(60, 60, 80))
-
-        local colors = {
-            Color3.fromRGB(255, 0, 0),
-            Color3.fromRGB(0, 255, 0),
-            Color3.fromRGB(0, 0, 255),
-            Color3.fromRGB(255, 255, 0),
-            Color3.fromRGB(255, 0, 255),
-            Color3.fromRGB(0, 255, 255),
-            Color3.fromRGB(255, 255, 255),
-            Color3.fromRGB(0, 0, 0),
-        }
-
-        local grid = Instance.new("Frame")
-        grid.Size = UDim2.new(1, -10, 1, -40)
-        grid.Position = UDim2.new(0, 5, 0, 5)
-        grid.BackgroundTransparency = 1
-        grid.Parent = menu
-
-        for i, color in ipairs(colors) do
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 40, 0, 40)
-            btn.Position = UDim2.new(0, ((i-1)%4)*45, 0, math.floor((i-1)/4)*45)
-            btn.BackgroundColor3 = color
-            btn.Text = ""
-            btn.Parent = grid
-            createCorner(btn, 6)
-
-            btn.MouseButton1Click:Connect(function()
-                getgenv()[name] = color
-                colorDisplay.BackgroundColor3 = color
-                menu:Destroy()
-            end)
-        end
-
-        local closeBtn = Instance.new("TextButton")
-        closeBtn.Size = UDim2.new(1, -10, 0, 30)
-        closeBtn.Position = UDim2.new(0, 5, 1, -35)
-        closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-        closeBtn.Text = "Fechar"
-        closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        closeBtn.Font = Enum.Font.Gotham
-        closeBtn.TextSize = 14
-        closeBtn.Parent = menu
-        createCorner(closeBtn, 6)
-
-        closeBtn.MouseButton1Click:Connect(function()
-            menu:Destroy()
-        end)
+    btn.MouseEnter:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
     end)
 
-    return container
+    return btn
 end
 
 -- Seção com título
@@ -679,109 +605,208 @@ local function createSection(parent, title)
     contentLayout.Parent = content
 
     return section, content
-end
-
--- Botão de ação rápida
-local function createActionButton(parent, text, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 45)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.Parent = parent
-    createCorner(btn, 8)
-    createStroke(btn, 1, Color3.fromRGB(70, 70, 100))
-
-    btn.MouseButton1Click:Connect(callback)
-
-    btn.MouseEnter:Connect(function()
-        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(65, 65, 85)}, 0.15)
-    end)
-    btn.MouseLeave:Connect(function()
-        tweenObject(btn, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.15)
-    end)
-
-    return btn
 end-- ===================================================================
--- PARTE 3/4 – CONTEÚDO DAS ABAS (PREDICT, SERVE, JUMPESP, HITBOX, ACTIONS)
+-- PARTE 3/4 – CONTEÚDO DAS ABAS TROLL, PLAYER, VEHICLES
 -- ===================================================================
 
--- ========== ABA PREDICT ==========
-local predictPage = pages["Predict"]
+-- ========== ABA TROLL ==========
+local trollPage = pages["Troll"]
 
-local predictSection, predictContent = createSection(predictPage, "Predict Aim")
-predictSection.Size = UDim2.new(1, 0, 0, 200)
+local trollSection, trollContent = createSection(trollPage, "Funções Troll")
+trollSection.Size = UDim2.new(1, 0, 0, 350)
 
-createToggle(predictContent, "PredictAim", "Enable Predict Aim", false)
-createSlider(predictContent, "PredictionLength", "Prediction Length", 1, 20, 5, " studs")
-createColorPicker(predictContent, "PredictAimColor", "Predict Color", getgenv().PredictAimColor)
+createToggle(trollContent, "SitOthers", "Sentar outros players", false)
+createToggle(trollContent, "FreezeOthers", "Congelar outros players", false)
+createToggle(trollContent, "ExplodeCars", "Explodir carros próximos", false)
 
--- ========== ABA SERVE ==========
-local servePage = pages["Serve"]
-
-local serveSection, serveContent = createSection(servePage, "Auto Strong Serve")
-serveSection.Size = UDim2.new(1, 0, 0, 80)
-
-createToggle(serveContent, "AutoStrongServe", "Enable Auto Strong Serve", false)
-
--- ========== ABA JUMPESP ==========
-local jumpPage = pages["JumpESP"]
-
-local jumpSection, jumpContent = createSection(jumpPage, "Jump ESP")
-jumpSection.Size = UDim2.new(1, 0, 0, 140)
-
-createToggle(jumpContent, "JumpESP", "Enable Jump ESP", false)
-createColorPicker(jumpContent, "JumpESPColor", "Jump ESP Color", getgenv().JumpESPColor)
-
--- ========== ABA HITBOX ==========
-local hitboxPage = pages["Hitbox"]
-
-local ballSection, ballContent = createSection(hitboxPage, "Ball Hitbox")
-ballSection.Size = UDim2.new(1, 0, 0, 210)
-
-createToggle(ballContent, "BallHitbox", "Enable Ball Hitbox", false)
-createSlider(ballContent, "BallHitboxSize", "Hitbox Size", 1, 5, 2, "x")
-createColorPicker(ballContent, "BallHitboxColor", "Hitbox Color", getgenv().BallHitboxColor)
-
--- ========== ABA ACTIONS ==========
-local actionsPage = pages["Actions"]
-
-local actionsSection, actionsContent = createSection(actionsPage, "Quick Actions")
-actionsSection.Size = UDim2.new(1, 0, 0, 250)
-
-createActionButton(actionsContent, "🏐 MERGULHO (Dive)", function()
-    -- Tenta executar um mergulho (encontrar remote)
-    local remote = ReplicatedStorage:FindFirstChild("Dive") or 
-                   (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Dive"))
-    if remote then
-        remote:FireServer()
+createButton(trollContent, "💺 Sentar jogador alvo", function()
+    if getgenv().TrollTarget and getgenv().TrollTarget.Character then
+        local hrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local seat = Instance.new("Part")
+            seat.Size = Vector3.new(4, 1, 4)
+            seat.Anchored = true
+            seat.CanCollide = false
+            seat.Transparency = 1
+            seat.CFrame = hrp.CFrame * CFrame.new(0, -2, 0)
+            seat.Parent = Workspace
+            
+            local weld = Instance.new("Weld")
+            weld.Part0 = hrp
+            weld.Part1 = seat
+            weld.C0 = CFrame.new(0, 2, 0)
+            weld.Parent = seat
+            
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.Position = seat.Position
+            bodyPosition.MaxForce = Vector3.new(4000, 4000, 4000)
+            bodyPosition.Parent = hrp
+        end
     else
-        print("Remote de mergulho não encontrado")
+        print("Selecione um alvo primeiro!")
     end
 end)
 
-createActionButton(actionsContent, "⚙️ CONFIGURAÇÃO", function()
-    -- Abre um menu simples de configuração (pode ser expandido)
-    print("Abrir configurações...")
+createButton(trollContent, "❄️ Congelar alvo", function()
+    if getgenv().TrollTarget and getgenv().TrollTarget.Character then
+        local hrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.Anchored = true
+        end
+    end
 end)
 
-createActionButton(actionsContent, "🔄 Auto Spike", function()
-    getgenv().AutoSpike = not getgenv().AutoSpike
-    print("Auto Spike:", getgenv().AutoSpike and "ON" or "OFF")
+createButton(trollContent, "🔥 Descongelar alvo", function()
+    if getgenv().TrollTarget and getgenv().TrollTarget.Character then
+        local hrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.Anchored = false
+        end
+    end
 end)
 
-createActionButton(actionsContent, "🛡️ Auto Block", function()
-    getgenv().AutoBlock = not getgenv().AutoBlock
-    print("Auto Block:", getgenv().AutoBlock and "ON" or "OFF")
+createButton(trollContent, "🎯 Selecionar alvo (clique em um player)", function()
+    -- Abre um menu simples de seleção
+    local menu = Instance.new("Frame")
+    menu.Size = UDim2.new(0, 300, 0, 400)
+    menu.Position = UDim2.new(0.5, -150, 0.5, -200)
+    menu.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    menu.Parent = ScreenGui
+    createCorner(menu, 8)
+    createStroke(menu, 1, Color3.fromRGB(60, 60, 80))
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -10, 0, 40)
+    title.Position = UDim2.new(0, 5, 0, 5)
+    title.BackgroundTransparency = 1
+    title.Text = "Selecione um jogador"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 18
+    title.Parent = menu
+
+    local list = Instance.new("ScrollingFrame")
+    list.Size = UDim2.new(1, -10, 1, -80)
+    list.Position = UDim2.new(0, 5, 0, 45)
+    list.BackgroundTransparency = 1
+    list.ScrollBarThickness = 4
+    list.Parent = menu
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 5)
+    layout.Parent = list
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Player then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, -10, 0, 40)
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+            btn.Text = player.Name
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 16
+            btn.Parent = list
+            createCorner(btn, 6)
+
+            btn.MouseButton1Click:Connect(function()
+                getgenv().TrollTarget = player
+                menu:Destroy()
+                print("Alvo selecionado:", player.Name)
+            end)
+        end
+    end
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(1, -10, 0, 30)
+    closeBtn.Position = UDim2.new(0, 5, 1, -35)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    closeBtn.Text = "Fechar"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.Font = Enum.Font.Gotham
+    closeBtn.TextSize = 14
+    closeBtn.Parent = menu
+    createCorner(closeBtn, 6)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        menu:Destroy()
+    end)
 end)
 
-createActionButton(actionsContent, "💨 Auto Dive", function()
-    getgenv().AutoDive = not getgenv().AutoDive
-    print("Auto Dive:", getgenv().AutoDive and "ON" or "OFF")
+-- ========== ABA PLAYER ==========
+local playerPage = pages["Player"]
+
+local playerSection, playerContent = createSection(playerPage, "Player Options")
+playerSection.Size = UDim2.new(1, 0, 0, 250)
+
+createToggle(playerContent, "Fly", "Voar (Fly)", false)
+createSlider(playerContent, "FlySpeed", "Velocidade de voo", 10, 200, 50, "")
+createSlider(playerContent, "Speed", "Velocidade de andar", 16, 120, 16, "")
+createSlider(playerContent, "JumpPower", "Pulo", 50, 200, 50, "")
+createToggle(playerContent, "Invisible", "Invisível", false)
+createToggle(playerContent, "NoClip", "NoClip (atravessar paredes)", false)
+
+-- ========== ABA VEHICLES ==========
+local vehiclesPage = pages["Vehicles"]
+
+local vehiclesSection, vehiclesContent = createSection(vehiclesPage, "Veículos")
+vehiclesSection.Size = UDim2.new(1, 0, 0, 200)
+
+createButton(vehiclesContent, "💥 Explodir carro mais próximo", function()
+    local nearestCar = nil
+    local nearestDist = math.huge
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("VehicleSeat") or obj.Name:lower():find("car") or obj.Name:lower():find("vehicle") then
+            local part = obj.Parent:FindFirstChild("Body") or obj.Parent:FindFirstChild("MainPart") or obj.Parent:FindFirstChildWhichIsA("BasePart")
+            if part and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (part.Position - Player.Character.HumanoidRootPart.Position).Magnitude
+                if dist < nearestDist then
+                    nearestDist = dist
+                    nearestCar = obj.Parent
+                end
+            end
+        end
+    end
+    if nearestCar then
+        nearestCar:BreakJoints()
+        local explosion = Instance.new("Explosion")
+        explosion.Position = nearestCar:GetPivot().Position
+        explosion.BlastRadius = 10
+        explosion.DestroyJointRadiusPercent = 1
+        explosion.Parent = Workspace
+    end
+end)
+
+createButton(vehiclesContent, "🚗 Teleportar para carro mais próximo", function()
+    local nearestCar = nil
+    local nearestDist = math.huge
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("VehicleSeat") then
+            local part = obj.Parent:FindFirstChild("Body") or obj.Parent:FindFirstChild("MainPart") or obj.Parent:FindFirstChildWhichIsA("BasePart")
+            if part and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (part.Position - Player.Character.HumanoidRootPart.Position).Magnitude
+                if dist < nearestDist then
+                    nearestDist = dist
+                    nearestCar = part
+                end
+            end
+        end
+    end
+    if nearestCar and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        Player.Character.HumanoidRootPart.CFrame = nearestCar.CFrame * CFrame.new(0, 3, 0)
+    end
+end)
+
+createButton(vehiclesContent, "🔧 Destruir todos os carros", function()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("VehicleSeat") then
+            local car = obj.Parent
+            if car then
+                car:BreakJoints()
+            end
+        end
+    end
 end)-- ===================================================================
--- PARTE 4/4 – CRÉDITOS E HEARTBEAT FUNCIONAL
+-- PARTE 4/4 – CRÉDITOS E HEARTBEAT (FUNÇÕES ATIVAS)
 -- ===================================================================
 
 -- ========== ABA CREDITS ==========
@@ -847,223 +872,168 @@ end)
 
 -- ========== HEARTBEAT LOOP - FUNÇÕES ATIVAS ==========
 
--- Variáveis para os overlays
-local hitboxHighlight = nil
-local jumpESPLines = {}
-local predictLines = {}
-
--- Função melhorada para encontrar a bola
-local function findBall()
-    -- Procura por objetos com nome "Ball" ou "Volleyball" em qualquer lugar
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and (obj.Name:lower():find("ball") or obj.Name:lower():find("volley")) then
-            return obj
-        end
-    end
-    -- Se não encontrar, procura por partes esféricas (pode ser útil)
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj:IsA("Part") and obj.Shape == Enum.PartType.Ball then
-            return obj
-        end
-    end
-    return nil
-end
-
--- Função para encontrar remote de saque
-local function findServeRemote()
-    local remoteNames = {"Serve", "ServeBall", "HitBall", "StrongServe", "PowerServe"}
-    for _, name in ipairs(remoteNames) do
-        local remote = ReplicatedStorage:FindFirstChild(name)
-        if remote then return remote end
-        local folder = ReplicatedStorage:FindFirstChild("Remotes") or ReplicatedStorage:FindFirstChild("Events")
-        if folder then
-            remote = folder:FindFirstChild(name)
-            if remote then return remote end
-        end
-    end
-    return nil
-end
+-- Variáveis para controle
+local flyBodyVelocity = nil
+local flyBodyGyro = nil
 
 RunService.Heartbeat:Connect(function()
     local character = Player.Character
+    local humanoid = character and character:FindFirstChild("Humanoid")
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    local ballPart = findBall()
+    
+    if not character or not humanoid or not rootPart then return end
 
-    -- ===== 1. BALL HITBOX (usando Highlight para melhor visualização) =====
-    if getgenv().BallHitbox and ballPart then
-        if not hitboxHighlight or not hitboxHighlight.Parent then
-            hitboxHighlight = Instance.new("Highlight")
-            hitboxHighlight.Name = "BallHitbox"
-            hitboxHighlight.Adornee = ballPart
-            hitboxHighlight.FillColor = getgenv().BallHitboxColor
-            hitboxHighlight.OutlineColor = Color3.new(1,1,1)
-            hitboxHighlight.FillTransparency = 0.5
-            hitboxHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            hitboxHighlight.Parent = Workspace
-        else
-            hitboxHighlight.Adornee = ballPart
-            hitboxHighlight.FillColor = getgenv().BallHitboxColor
-            -- Ajustar "tamanho" via Outline? Não é possível, mas podemos usar um BillboardGui? Melhor manter assim.
+    -- ===== FLY =====
+    if getgenv().Fly then
+        if not flyBodyVelocity then
+            flyBodyVelocity = Instance.new("BodyVelocity")
+            flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            flyBodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+            flyBodyVelocity.Parent = rootPart
+
+            flyBodyGyro = Instance.new("BodyGyro")
+            flyBodyGyro.MaxTorque = Vector3.new(4000, 4000, 4000)
+            flyBodyGyro.P = 1000
+            flyBodyGyro.Parent = rootPart
+        end
+
+        local moveDirection = Vector3.new(0, 0, 0)
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + (rootPart.CFrame.LookVector * getgenv().FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - (rootPart.CFrame.LookVector * getgenv().FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - (rootPart.CFrame.RightVector * getgenv().FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + (rootPart.CFrame.RightVector * getgenv().FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, getgenv().FlySpeed, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDirection = moveDirection - Vector3.new(0, getgenv().FlySpeed, 0)
+        end
+
+        flyBodyVelocity.Velocity = moveDirection
+        flyBodyGyro.CFrame = rootPart.CFrame
+    else
+        if flyBodyVelocity then
+            flyBodyVelocity:Destroy()
+            flyBodyVelocity = nil
+        end
+        if flyBodyGyro then
+            flyBodyGyro:Destroy()
+            flyBodyGyro = nil
+        end
+    end
+
+    -- ===== SPEED / JUMP =====
+    humanoid.WalkSpeed = getgenv().Speed
+    humanoid.JumpPower = getgenv().JumpPower
+
+    -- ===== INVISIBLE =====
+    if getgenv().Invisible then
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 1
+            end
         end
     else
-        if hitboxHighlight then
-            hitboxHighlight:Destroy()
-            hitboxHighlight = nil
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+            end
         end
     end
 
-    -- ===== 2. AUTO STRONG SERVE =====
-    if getgenv().AutoStrongServe then
-        local remote = findServeRemote()
-        if remote then
-            pcall(function()
-                remote:FireServer(100)
-                remote:FireServer("strong")
-                remote:FireServer(true)
-            end)
+    -- ===== NOCLIP =====
+    if getgenv().NoClip then
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    else
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
         end
     end
 
-    -- ===== 3. JUMP ESP =====
-    if getgenv().JumpESP then
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
-                local hum = player.Character.Humanoid
-                local root = player.Character.HumanoidRootPart
-                if hum:GetState() == Enum.HumanoidStateType.Jumping or hum.FloorMaterial == Enum.Material.Air then
-                    if not jumpESPLines[player] then
-                        local attach1 = Instance.new("Attachment")
-                        attach1.Name = "JumpESP_Attach1"
-                        attach1.Parent = root
-                        
-                        local attach2 = Instance.new("Attachment")
-                        attach2.Name = "JumpESP_Attach2"
-                        attach2.Parent = root
-                        
-                        local beam = Instance.new("Beam")
-                        beam.Attachment0 = attach1
-                        beam.Attachment1 = attach2
-                        beam.Width0 = 0.3
-                        beam.Width1 = 0.3
-                        beam.Transparency = NumberSequence.new(0)
-                        beam.Color = ColorSequence.new(getgenv().JumpESPColor)
-                        beam.Parent = Workspace
-                        
-                        jumpESPLines[player] = {attach1, attach2, beam}
-                    end
-                    
-                    local attach1, attach2, beam = unpack(jumpESPLines[player])
-                    local rootPos = root.Position
-                    attach1.Position = Vector3.new(rootPos.X, 0, rootPos.Z)
-                    attach2.Position = Vector3.new(rootPos.X, rootPos.Y, rootPos.Z)
-                    beam.Color = ColorSequence.new(getgenv().JumpESPColor)
-                else
-                    if jumpESPLines[player] then
-                        for _, obj in ipairs(jumpESPLines[player]) do
-                            obj:Destroy()
-                        end
-                        jumpESPLines[player] = nil
+    -- ===== SIT OTHERS (ativo contínuo) =====
+    if getgenv().SitOthers and getgenv().TrollTarget and getgenv().TrollTarget.Character then
+        local targetHrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+        if targetHrp then
+            -- Força a sentar criando um seat invisível embaixo
+            if not targetHrp:FindFirstChild("SitBodyPosition") then
+                local seat = Instance.new("Part")
+                seat.Size = Vector3.new(4, 1, 4)
+                seat.Anchored = true
+                seat.CanCollide = false
+                seat.Transparency = 1
+                seat.CFrame = targetHrp.CFrame * CFrame.new(0, -2, 0)
+                seat.Parent = Workspace
+                
+                local bodyPosition = Instance.new("BodyPosition")
+                bodyPosition.Position = seat.Position
+                bodyPosition.MaxForce = Vector3.new(4000, 4000, 4000)
+                bodyPosition.Parent = targetHrp
+                
+                -- Marca para não criar múltiplos
+                local tag = Instance.new("BoolValue")
+                tag.Name = "SitBodyPosition"
+                tag.Parent = targetHrp
+                
+                -- Remove após 1 segundo para não prender para sempre
+                task.delay(1, function()
+                    if bodyPosition then bodyPosition:Destroy() end
+                    if seat then seat:Destroy() end
+                    if tag then tag:Destroy() end
+                end)
+            end
+        end
+    end
+
+    -- ===== FREEZE OTHERS =====
+    if getgenv().FreezeOthers and getgenv().TrollTarget and getgenv().TrollTarget.Character then
+        local targetHrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+        if targetHrp then
+            targetHrp.Anchored = true
+        end
+    else
+        if getgenv().TrollTarget and getgenv().TrollTarget.Character then
+            local targetHrp = getgenv().TrollTarget.Character:FindFirstChild("HumanoidRootPart")
+            if targetHrp then
+                targetHrp.Anchored = false
+            end
+        end
+    end
+
+    -- ===== EXPLODE CARS (ativo contínuo) =====
+    if getgenv().ExplodeCars then
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj:IsA("VehicleSeat") then
+                local car = obj.Parent
+                if car and car:FindFirstChild("Body") then
+                    local dist = (car:GetPivot().Position - rootPart.Position).Magnitude
+                    if dist < 20 then
+                        car:BreakJoints()
+                        local explosion = Instance.new("Explosion")
+                        explosion.Position = car:GetPivot().Position
+                        explosion.BlastRadius = 10
+                        explosion.DestroyJointRadiusPercent = 1
+                        explosion.Parent = Workspace
                     end
                 end
-            end
-        end
-    else
-        for player, objs in pairs(jumpESPLines) do
-            for _, obj in ipairs(objs) do
-                obj:Destroy()
-            end
-        end
-        jumpESPLines = {}
-    end
-
-    -- ===== 4. PREDICT AIM =====
-    if getgenv().PredictAim and ballPart and rootPart then
-        local velocity = ballPart.Velocity
-        local speed = velocity.Magnitude
-        if speed > 0.5 then
-            local direction = velocity.Unit
-            local startPos = ballPart.Position
-            local endPos = startPos + direction * getgenv().PredictionLength
-            
-            if not predictLines["main"] then
-                local attach1 = Instance.new("Attachment")
-                attach1.Name = "Predict_Attach1"
-                attach1.Parent = ballPart
-                
-                local attach2 = Instance.new("Attachment")
-                attach2.Name = "Predict_Attach2"
-                attach2.Parent = ballPart
-                
-                local beam = Instance.new("Beam")
-                beam.Attachment0 = attach1
-                beam.Attachment1 = attach2
-                beam.Width0 = 0.4
-                beam.Width1 = 0.4
-                beam.Transparency = NumberSequence.new(0.2)
-                beam.Color = ColorSequence.new(getgenv().PredictAimColor)
-                beam.Parent = Workspace
-                
-                predictLines["main"] = {attach1, attach2, beam}
-            end
-            
-            local attach1, attach2, beam = unpack(predictLines["main"])
-            attach1.Position = Vector3.new(0,0,0)
-            attach2.Position = ballPart.CFrame:PointToObjectSpace(endPos)
-            beam.Color = ColorSequence.new(getgenv().PredictAimColor)
-        else
-            if predictLines["main"] then
-                for _, obj in ipairs(predictLines["main"]) do
-                    obj:Destroy()
-                end
-                predictLines["main"] = nil
-            end
-        end
-    else
-        if predictLines["main"] then
-            for _, obj in ipairs(predictLines["main"]) do
-                obj:Destroy()
-            end
-            predictLines["main"] = nil
-        end
-    end
-
-    -- ===== 5. AUTO SPIKE (exemplo) =====
-    if getgenv().AutoSpike and ballPart and rootPart then
-        local dist = (ballPart.Position - rootPart.Position).Magnitude
-        if dist < 15 then
-            local remote = ReplicatedStorage:FindFirstChild("Spike") or 
-                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Spike"))
-            if remote then
-                remote:FireServer()
-            end
-        end
-    end
-
-    -- ===== 6. AUTO BLOCK =====
-    if getgenv().AutoBlock and ballPart and rootPart then
-        local dist = (ballPart.Position - rootPart.Position).Magnitude
-        if dist < 10 then
-            local remote = ReplicatedStorage:FindFirstChild("Block") or 
-                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Block"))
-            if remote then
-                remote:FireServer()
-            end
-        end
-    end
-
-    -- ===== 7. AUTO DIVE =====
-    if getgenv().AutoDive and ballPart and rootPart then
-        local dist = (ballPart.Position - rootPart.Position).Magnitude
-        if dist > 20 then
-            local remote = ReplicatedStorage:FindFirstChild("Dive") or 
-                           (ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Dive"))
-            if remote then
-                remote:FireServer()
             end
         end
     end
 end)
 
-print("✅ Shinka Hub - Volleyball Legends carregado!")
-print("🎯 Funções: Hitbox | Auto Serve | Jump ESP | Predict | Ações Rápidas")
+print("✅ Shinka Hub - Brookhaven (Troll) carregado!")
+print("👹 Funções: Fly | Speed | Invisible | Sit/Freeze outros | Explodir carros")
 print("📱 Discord: https://discord.gg/SNutmtu6x")
