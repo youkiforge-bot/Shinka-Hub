@@ -1,83 +1,102 @@
--- ShinkaHub - Script Universal para Celular
--- Criado por: ShinkaHub
--- Versão: 1.0
+-- ShinkaHub v2.0 - Estilo AUREUS
+-- Criado por: Shinka & Gemini (créditos no rodapé)
+-- Versão para celular com funções organizadas e ESP
 
--- Carrega a biblioteca de Fly externa (opcional, o botão irá chamar)
--- loadstring aqui apenas se quiser carregar automático, mas deixaremos no botão
+-- Serviços
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
--- Criar GUI principal
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
+-- GUI principal
 local gui = Instance.new("ScreenGui")
 gui.Name = "ShinkaHub"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Frame principal (movível e minimizável)
+-- Frame principal (estilo AUREUS)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 280, 0, 350)  -- Tamanho adequado para celular
-mainFrame.Position = UDim2.new(0.5, -140, 0.5, -175)  -- Centralizado
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+mainFrame.Size = UDim2.new(0, 300, 0, 400)  -- Tamanho para mobile
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)  -- Fundo escuro
 mainFrame.BorderSizePixel = 2
-mainFrame.BorderColor3 = Color3.fromRGB(0, 160, 255)
+mainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0)  -- Dourado
 mainFrame.Active = true
-mainFrame.Draggable = false  -- Vamos implementar arraste manual para evitar conflitos
+mainFrame.Draggable = false  -- Arraste manual
 mainFrame.Parent = gui
 
--- Arredondar cantos (opcional)
+-- Cantos arredondados
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = mainFrame
 
+-- Barra superior (título e botões)
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 40)
+topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 10)
+topCorner.Parent = topBar
+-- Apenas cantos superiores arredondados (para não sobrepor o frame)
+-- Mas vamos manter assim.
+
 -- Título
 local title = Instance.new("TextLabel")
 title.Name = "Title"
-title.Size = UDim2.new(1, -40, 0, 30)
-title.Position = UDim2.new(0, 10, 0, 5)
+title.Size = UDim2.new(1, -80, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "ShinkaHub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Text = "ShinkaHub v2"
+title.TextColor3 = Color3.fromRGB(255, 215, 0)  -- Dourado
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = mainFrame
+title.Parent = topBar
 
--- Botão Minimizar (Fecha o frame principal, mas deixa um ícone para reabrir)
-local minimizeBtn = Instance.new("ImageButton")
+-- Botão Minimizar
+local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Name = "MinimizeBtn"
 minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
-minimizeBtn.AutoButtonColor = false
-minimizeBtn.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"  -- Placeholder, talvez usar um ícone
--- Para melhorar, usaremos um TextLabel com "-"
-local minText = Instance.new("TextLabel")
-minText.Size = UDim2.new(1, 0, 1, 0)
-minText.BackgroundTransparency = 1
-minText.Text = "-"
-minText.TextColor3 = Color3.new(1,1,1)
-minText.TextScaled = true
-minText.Font = Enum.Font.GothamBold
-minText.Parent = minimizeBtn
-minimizeBtn.Parent = mainFrame
+minimizeBtn.Position = UDim2.new(1, -70, 0, 5)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.fromRGB(20, 20, 30)
+minimizeBtn.TextScaled = true
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.BorderSizePixel = 0
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 6)
+minCorner.Parent = minimizeBtn
+minimizeBtn.Parent = topBar
 
--- Botão Arrastar (usaremos o título como área de arrasto)
-local dragArea = title  -- Pode usar o título para arrastar
+-- Botão Fechar
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "CloseBtn"
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.BorderSizePixel = 0
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeBtn
+closeBtn.Parent = topBar
 
--- Variáveis para arraste
+-- Área de arraste (usando a topBar)
 local dragging = false
-local dragInput
-local dragStart
-local startPos
+local dragInput, dragStart, startPos
 
-local function updateDrag(input)
-	local delta = input.Position - dragStart
-	mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-dragArea.InputBegan:Connect(function(input)
+topBar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
 		dragStart = input.Position
@@ -91,42 +110,41 @@ dragArea.InputBegan:Connect(function(input)
 	end
 end)
 
-dragArea.InputChanged:Connect(function(input)
+topBar.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch and dragging then
-		updateDrag(input)
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
 
--- Botão para minimizar (esconde o mainFrame e mostra um ícone flutuante)
+-- Frame minimizado (ícone)
 local minimizedFrame = Instance.new("Frame")
 minimizedFrame.Name = "MinimizedFrame"
 minimizedFrame.Size = UDim2.new(0, 60, 0, 60)
-minimizedFrame.Position = UDim2.new(0, 20, 0, 100)  -- Posição inicial
-minimizedFrame.BackgroundColor3 = Color3.fromRGB(0, 160, 255)
+minimizedFrame.Position = UDim2.new(0, 20, 0, 100)
+minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
 minimizedFrame.BorderSizePixel = 2
-minimizedFrame.BorderColor3 = Color3.fromRGB(255,255,255)
+minimizedFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 minimizedFrame.Visible = false
 minimizedFrame.Parent = gui
-local minCorner = Instance.new("UICorner")
-minCorner.CornerRadius = UDim.new(0, 30)
-minCorner.Parent = minimizedFrame
+local minFrameCorner = Instance.new("UICorner")
+minFrameCorner.CornerRadius = UDim.new(0, 30)
+minFrameCorner.Parent = minimizedFrame
 
 local minIcon = Instance.new("TextLabel")
 minIcon.Size = UDim2.new(1, 0, 1, 0)
 minIcon.BackgroundTransparency = 1
 minIcon.Text = "S"
-minIcon.TextColor3 = Color3.new(1,1,1)
+minIcon.TextColor3 = Color3.fromRGB(20, 20, 30)
 minIcon.TextScaled = true
 minIcon.Font = Enum.Font.GothamBold
 minIcon.Parent = minimizedFrame
 
 -- Tornar minimizedFrame arrastável
-local dragMin = minimizedFrame
 local draggingMin = false
-local dragMinStart
-local startMinPos
+local dragMinStart, startMinPos
 
-dragMin.InputBegan:Connect(function(input)
+minimizedFrame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch then
 		draggingMin = true
 		dragMinStart = input.Position
@@ -140,14 +158,14 @@ dragMin.InputBegan:Connect(function(input)
 	end
 end)
 
-dragMin.InputChanged:Connect(function(input)
+minimizedFrame.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch and draggingMin then
 		local delta = input.Position - dragMinStart
 		minimizedFrame.Position = UDim2.new(startMinPos.X.Scale, startMinPos.X.Offset + delta.X, startMinPos.Y.Scale, startMinPos.Y.Offset + delta.Y)
 	end
 end)
 
--- Alternar visibilidade
+-- Função de minimizar/restaurar
 minimizeBtn.MouseButton1Click:Connect(function()
 	mainFrame.Visible = false
 	minimizedFrame.Visible = true
@@ -155,32 +173,41 @@ end)
 
 minimizedFrame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch then
-		-- Se tocar no ícone minimizado, restaura
+		-- Ao tocar no ícone, restaura
 		minimizedFrame.Visible = false
 		mainFrame.Visible = true
 	end
 end)
 
--- Agora adicionar funcionalidades dentro do mainFrame
--- Criar um ScrollingFrame para conter os botões (evitar overflow)
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+-- Container para as funções (ScrollingFrame)
 local container = Instance.new("ScrollingFrame")
 container.Name = "Container"
-container.Size = UDim2.new(1, -20, 1, -70)
-container.Position = UDim2.new(0, 10, 0, 40)
+container.Size = UDim2.new(1, -20, 1, -80)  -- Deixar espaço para a barra superior e rodapé
+container.Position = UDim2.new(0, 10, 0, 50)
 container.BackgroundTransparency = 1
 container.ScrollBarThickness = 4
-container.CanvasSize = UDim2.new(0,0,0,0)  -- Ajustar depois
+container.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
 container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 container.Parent = mainFrame
 
 -- Layout automático
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 5)
+layout.Padding = UDim.new(0, 8)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = container
 
--- Função para criar um botão padrão
+-- Ajustar canvas size
+local function updateCanvas()
+	container.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 10)
+end
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+
+-- Função para criar botões
 local function createButton(text, color, callback)
 	local btn = Instance.new("TextButton")
 	btn.Size = UDim2.new(1, -10, 0, 50)
@@ -191,27 +218,26 @@ local function createButton(text, color, callback)
 	btn.Font = Enum.Font.GothamSemibold
 	btn.BorderSizePixel = 2
 	btn.BorderColor3 = Color3.fromRGB(0,0,0)
-	btn.AutoButtonColor = false
 	local btnCorner = Instance.new("UICorner")
 	btnCorner.CornerRadius = UDim.new(0, 8)
 	btnCorner.Parent = btn
 	btn.Parent = container
-	
+
 	btn.MouseButton1Click:Connect(callback)
 	return btn
 end
 
--- Função para criar uma caixa de entrada com botão
+-- Função para criar campo de entrada com botão
 local function createInputBox(placeholder, buttonText, color, callback)
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(1, -10, 0, 80)
+	frame.Size = UDim2.new(1, -10, 0, 90)
 	frame.BackgroundTransparency = 1
 	frame.Parent = container
-	
+
 	local box = Instance.new("TextBox")
 	box.Size = UDim2.new(1, 0, 0, 40)
 	box.Position = UDim2.new(0, 0, 0, 0)
-	box.BackgroundColor3 = Color3.fromRGB(60,60,70)
+	box.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 	box.TextColor3 = Color3.new(1,1,1)
 	box.PlaceholderText = placeholder
 	box.PlaceholderColor3 = Color3.fromRGB(180,180,180)
@@ -224,10 +250,10 @@ local function createInputBox(placeholder, buttonText, color, callback)
 	boxCorner.CornerRadius = UDim.new(0, 6)
 	boxCorner.Parent = box
 	box.Parent = frame
-	
+
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, 0, 0, 35)
-	btn.Position = UDim2.new(0, 0, 1, -35)
+	btn.Size = UDim2.new(1, 0, 0, 40)
+	btn.Position = UDim2.new(0, 0, 1, -40)
 	btn.BackgroundColor3 = color
 	btn.Text = buttonText
 	btn.TextColor3 = Color3.new(1,1,1)
@@ -239,23 +265,43 @@ local function createInputBox(placeholder, buttonText, color, callback)
 	btnCorner.CornerRadius = UDim.new(0, 6)
 	btnCorner.Parent = btn
 	btn.Parent = frame
-	
+
 	btn.MouseButton1Click:Connect(function()
 		callback(box.Text)
 	end)
-	
+
 	return frame, box, btn
 end
 
--- Criar botões de funcionalidades
+-- Rodapé com créditos
+local footer = Instance.new("TextLabel")
+footer.Name = "Credits"
+footer.Size = UDim2.new(1, -20, 0, 30)
+footer.Position = UDim2.new(0, 10, 1, -35)
+footer.BackgroundTransparency = 0.5
+footer.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+footer.Text = "Shinka & Gemini"
+footer.TextColor3 = Color3.fromRGB(255, 215, 0)
+footer.TextScaled = true
+footer.Font = Enum.Font.Gotham
+footer.BorderSizePixel = 0
+local footerCorner = Instance.new("UICorner")
+footerCorner.CornerRadius = UDim.new(0, 6)
+footerCorner.Parent = footer
+footer.Parent = mainFrame
 
--- 1. Speed (Velocidade)
+-- Início das funções
+
+-- 1. Speed
 createInputBox("Digite a velocidade (ex: 50)", "Aplicar Speed", Color3.fromRGB(0, 120, 255), function(value)
 	local speed = tonumber(value)
-	if speed and speed > 0 then
-		player.Character.Humanoid.WalkSpeed = speed
+	if speed and speed > 0 and LocalPlayer.Character then
+		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = speed
+		end
 	else
-		-- Notificação simples (criar um popup ou aviso)
+		-- Notificação simples (opcional)
 	end
 end)
 
@@ -264,62 +310,72 @@ createButton("Fly (Ativar)", Color3.fromRGB(255, 120, 0), function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
 end)
 
--- 3. NoClip (atravessar paredes)
+-- 3. NoClip
 local noclipActive = false
+local noclipConnection
 createButton("NoClip", Color3.fromRGB(200, 0, 200), function()
 	noclipActive = not noclipActive
 	if noclipActive then
-		game:GetService("RunService").Stepped:Connect(function()
-			if noclipActive and player.Character then
-				for _, part in pairs(player.Character:GetChildren()) do
+		noclipConnection = RunService.Stepped:Connect(function()
+			if LocalPlayer.Character then
+				for _, part in pairs(LocalPlayer.Character:GetChildren()) do
 					if part:IsA("BasePart") then
 						part.CanCollide = false
 					end
 				end
 			end
 		end)
+	else
+		if noclipConnection then
+			noclipConnection:Disconnect()
+			noclipConnection = nil
+		end
 	end
 end)
 
 -- 4. Infinito Jump
 local infJumpActive = false
+local jumpConnection
 createButton("Infinito Jump", Color3.fromRGB(0, 200, 100), function()
 	infJumpActive = not infJumpActive
 	if infJumpActive then
-		local uis = game:GetService("UserInputService")
-		uis.JumpRequest:Connect(function()
-			if infJumpActive and player.Character then
-				local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+		jumpConnection = UserInputService.JumpRequest:Connect(function()
+			if LocalPlayer.Character then
+				local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 				if humanoid then
 					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 				end
 			end
 		end)
-	end
-end)
-
--- 5. Teleport (para um jogador ou posição) - Simples: teleportar para mouse
-createButton("Teleport para Mouse", Color3.fromRGB(255, 50, 50), function()
-	local mouse = player:GetMouse()
-	local targetPos = mouse.Hit.p
-	if player.Character then
-		local root = player.Character:FindFirstChild("HumanoidRootPart")
-		if root then
-			root.CFrame = CFrame.new(targetPos)
+	else
+		if jumpConnection then
+			jumpConnection:Disconnect()
+			jumpConnection = nil
 		end
 	end
 end)
 
--- 6. Botão Copiar (copia um texto para a área de transferência)
-createButton("Copiar (ShinkaHub)", Color3.fromRGB(100, 100, 255), function()
-	local textToCopy = "ShinkaHub - https://discord.gg/shinkahub"  -- Exemplo
-	setclipboard(textToCopy)
-	-- Notificação simples
+-- 5. Teleport para Mouse
+createButton("Teleport para Mouse", Color3.fromRGB(255, 50, 50), function()
+	local target = Mouse.Hit
+	if target and LocalPlayer.Character then
+		local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if root then
+			root.CFrame = target
+		end
+	end
+end)
+
+-- 6. Copiar link do Discord
+createButton("Copiar Discord", Color3.fromRGB(100, 100, 255), function()
+	local discordLink = "https://discord.gg/SNutmtu6x"
+	setclipboard(discordLink)
+	-- Notificação
 	local notify = Instance.new("TextLabel")
 	notify.Size = UDim2.new(0, 200, 0, 50)
 	notify.Position = UDim2.new(0.5, -100, 0.5, -25)
 	notify.BackgroundColor3 = Color3.fromRGB(0,200,0)
-	notify.Text = "Copiado!"
+	notify.Text = "Link copiado!"
 	notify.TextColor3 = Color3.new(1,1,1)
 	notify.TextScaled = true
 	notify.Font = Enum.Font.GothamBold
@@ -328,39 +384,65 @@ createButton("Copiar (ShinkaHub)", Color3.fromRGB(100, 100, 255), function()
 	local notifyCorner = Instance.new("UICorner")
 	notifyCorner.CornerRadius = UDim.new(0, 10)
 	notifyCorner.Parent = notify
-	game:GetService("TweenService"):Create(notify, TweenInfo.new(1), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+	TweenService:Create(notify, TweenInfo.new(1), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
 	wait(1)
 	notify:Destroy()
 end)
 
--- Ajustar canvas size automaticamente
-local function updateCanvas()
-	container.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 10)
-end
-layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-updateCanvas()
+-- 7. ESP (destacar jogadores)
+local espActive = false
+local espConnections = {}
+local function createESP(player)
+	if player == LocalPlayer then return end
+	local function addESP(character)
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "ShinkaESP"
+		highlight.FillColor = Color3.fromRGB(255, 0, 0)
+		highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+		highlight.FillTransparency = 0.5
+		highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		highlight.Parent = character
+	end
 
--- Opcional: botão para fechar completamente (Destroy GUI) - cuidado, talvez não necessário
--- Mas podemos adicionar um botão de "X" no canto superior direito
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -65, 0, 5)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.TextScaled = true
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.BorderSizePixel = 2
-closeBtn.BorderColor3 = Color3.fromRGB(0,0,0)
-closeBtn.Parent = mainFrame
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = closeBtn
-closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy()
+	if player.Character then
+		addESP(player.Character)
+	end
+	player.CharacterAdded:Connect(addESP)
+end
+
+local function removeESP(player)
+	if player.Character then
+		local highlight = player.Character:FindFirstChildOfClass("Highlight")
+		if highlight and highlight.Name == "ShinkaESP" then
+			highlight:Destroy()
+		end
+	end
+end
+
+createButton("ESP (Jogadores)", Color3.fromRGB(255, 255, 0), function()
+	espActive = not espActive
+	if espActive then
+		for _, player in pairs(Players:GetPlayers()) do
+			createESP(player)
+		end
+		-- Conectar para novos jogadores
+		espConnections.PlayerAdded = Players.PlayerAdded:Connect(createESP)
+		espConnections.PlayerRemoving = Players.PlayerRemoving:Connect(removeESP)
+	else
+		-- Remover ESP de todos
+		for _, player in pairs(Players:GetPlayers()) do
+			removeESP(player)
+		end
+		if espConnections.PlayerAdded then
+			espConnections.PlayerAdded:Disconnect()
+		end
+		if espConnections.PlayerRemoving then
+			espConnections.PlayerRemoving:Disconnect()
+		end
+	end
 end)
 
--- Ajustes finais: garantir que minimizedFrame fique acima de outros elementos
-minimizedFrame.ZIndex = 10
+-- Atualizar canvas após adicionar todos os botões
+updateCanvas()
 
-print("ShinkaHub carregado com sucesso!")
+print("ShinkaHub v2 carregado com sucesso!")
